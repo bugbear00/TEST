@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Edu 콘텐츠 생성기</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 2.2em;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.9);
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 1.1em;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1.1em;
+      transition: border-color 0.3s;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.3em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .result.show {
+      display: block;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .result-icon {
+      font-size: 3em;
+    }
+
+    .result-title {
+      font-size: 1.5em;
+      color: #333;
+    }
+
+    .result-meta {
+      color: #666;
+      font-size: 0.95em;
+    }
+
+    .section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .section-title {
+      font-size: 1.1em;
+      color: #667eea;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .content-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #667eea;
+    }
+
+    .content-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .interaction-item {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid #48bb78;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      margin-right: 8px;
+      margin-bottom: 5px;
+    }
+
+    .tag.green {
+      background: #48bb78;
+    }
+
+    .tag.orange {
+      background: #ed8936;
+    }
+
+    .arcs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    @media (max-width: 600px) {
+      .arcs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .arcs-item {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .arcs-item h4 {
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .json-toggle {
+      background: #f0f0f0;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95em;
+      margin-top: 15px;
+    }
+
+    .json-content {
+      display: none;
+      background: #1e1e1e;
+      color: #9cdcfe;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 15px;
+      overflow-x: auto;
+      font-family: 'Consolas', monospace;
+      font-size: 0.9em;
+      white-space: pre-wrap;
+    }
+
+    .json-content.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI-Edu 콘텐츠 생성기</h1>
+    <p class="subtitle">초등 1학년 맞춤형 학습 콘텐츠를 자동으로 생성합니다</p>
+
+    <div class="card">
+      <form id="generateForm">
+        <div class="form-group">
+          <label>📚 교과 선택</label>
+          <select id="subject" required>
+            <option value="korean">국어</option>
+            <option value="math">수학</option>
+            <option value="digital_literacy">디지털 리터러시</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🎯 성취 기준</label>
+          <select id="achievementStandard">
+            <!-- 동적으로 채워짐 -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>📝 콘텐츠 유형</label>
+          <select id="contentType">
+            <option value="lesson">수업 (배우기)</option>
+            <option value="practice">연습 (익히기)</option>
+            <option value="game">게임 (놀이)</option>
+            <option value="assessment">평가 (확인하기)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🌈 테마 (선택)</label>
+          <input type="text" id="theme" placeholder="예: 가족, 동물, 과일">
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          ✨ 콘텐츠 생성하기
+        </button>
+      </form>
+    </div>
+
+    <div class="card result" id="resultCard">
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>콘텐츠를 생성하고 있어요...</p>
+      </div>
+
+      <div id="resultContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // 성취 기준 데이터
+    const standards = {
+      korean: [
+        { code: '[1국어01-01]', desc: '바른 자세로 듣고 말하며, 고운 말을 사용한다' },
+        { code: '[1국어01-02]', desc: '인사말을 상황에 맞게 주고받는다' },
+        { code: '[1국어02-01]', desc: '글자와 소리의 관계를 안다' },
+        { code: '[1국어02-02]', desc: '낱말과 문장을 소리 내어 읽는다' },
+        { code: '[1국어03-01]', desc: '글자를 바르게 쓴다' },
+        { code: '[1국어03-02]', desc: '자신의 생각을 문장으로 표현한다' }
+      ],
+      math: [
+        { code: '[1수학01-01]', desc: '0부터 9까지의 수 개념을 이해하고 세고 쓰고 읽기' },
+        { code: '[1수학01-02]', desc: '두 자리 수의 개념을 이해하고 세고 쓰고 읽기' },
+        { code: '[1수학01-03]', desc: '한 자리 수의 덧셈과 뺄셈' },
+        { code: '[1수학02-01]', desc: '여러 가지 모양을 알고 구별하기' },
+        { code: '[1수학03-01]', desc: '양을 비교하여 표현하기' }
+      ],
+      digital_literacy: [
+        { code: '[1디지털01-01]', desc: '디지털 기기의 기본 사용 방법' },
+        { code: '[1디지털01-02]', desc: '학습 앱 탐색과 활용' },
+        { code: '[1디지털02-01]', desc: '디지털 세계에서 안전하게 행동하기' },
+        { code: '[1디지털02-02]', desc: '디지털 공간에서 예의 바르게 행동하기' },
+        { code: '[1디지털03-01]', desc: '디지털 도구로 창작물 만들기' }
+      ]
+    };
+
+    // 성취 기준 드롭다운 업데이트
+    function updateStandards() {
+      const subject = document.getElementById('subject').value;
+      const select = document.getElementById('achievementStandard');
+      select.innerHTML = '';
+
+      standards[subject].forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.code;
+        option.textContent = `${s.code} ${s.desc}`;
+        select.appendChild(option);
+      });
+    }
+
+    document.getElementById('subject').addEventListener('change', updateStandards);
+    updateStandards();
+
+    // 폼 제출
+    document.getElementById('generateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const resultCard = document.getElementById('resultCard');
+      const loading = document.getElementById('loading');
+      const resultContent = document.getElementById('resultContent');
+
+      resultCard.classList.add('show');
+      loading.style.display = 'block';
+      resultContent.innerHTML = '';
+
+      const formData = {
+        subject: document.getElementById('subject').value,
+        achievementStandardCode: document.getElementById('achievementStandard').value,
+        contentType: document.getElementById('contentType').value,
+        theme: document.getElementById('theme').value || undefined
+      };
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        loading.style.display = 'none';
+
+        if (result.success) {
+          displayResult(result.content);
+        } else {
+          resultContent.innerHTML = `<p style="color:red;">오류: ${result.error}</p>`;
+        }
+      } catch (error) {
+        loading.style.display = 'none';
+        resultContent.innerHTML = `<p style="color:red;">오류가 발생했습니다: ${error.message}</p>`;
+      }
+    });
+
+    // 결과 표시
+    function displayResult(content) {
+      const subjectNames = {
+        korean: '국어',
+        math: '수학',
+        digital_literacy: '디지털'
+      };
+
+      const subjectIcons = {
+        korean: '📖',
+        math: '🔢',
+        digital_literacy: '💻'
+      };
+
+      let html = `
+        <div class="result-header">
+          <span class="result-icon">${subjectIcons[content.subject]}</span>
+          <div>
+            <div class="result-title">${content.title}</div>
+            <div class="result-meta">
+              <span class="tag">${subjectNames[content.subject]}</span>
+              <span class="tag green">${content.achievementStandard.code}</span>
+              <span class="tag orange">Bloom: ${content.bloomLevel.primaryLevel}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">🎯 성취 기준</div>
+          <p><strong>${content.achievementStandard.code}</strong></p>
+          <p>${content.achievementStandard.description}</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">📚 학습 콘텐츠</div>
+          ${(content.content.elements || []).map(el => `
+            <div class="content-item">
+              <strong>${getElementTypeName(el.type)}</strong>
+              <p>${el.content?.text || el.content?.character?.dialogue || ''}</p>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="section">
+          <div class="section-title">✋ 상호작용 활동</div>
+          ${(content.content.interactions || []).map(int => `
+            <div class="interaction-item">
+              <strong>${getInteractionTypeName(int.type)}</strong>
+              <p>${int.instruction}</p>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="section">
+          <div class="section-title">💡 ARCS 동기 요소</div>
+          <div class="arcs-grid">
+            <div class="arcs-item">
+              <h4>👀 주의(Attention)</h4>
+              <p>${content.arcsElements.attention?.strategy || '-'}</p>
+            </div>
+            <div class="arcs-item">
+              <h4>🔗 관련성(Relevance)</h4>
+              <p>${content.arcsElements.relevance?.realWorldConnection || '-'}</p>
+            </div>
+            <div class="arcs-item">
+              <h4>💪 자신감(Confidence)</h4>
+              <p>${content.arcsElements.confidence?.successCriteria || '-'}</p>
+            </div>
+            <div class="arcs-item">
+              <h4>🎉 만족감(Satisfaction)</h4>
+              <p>피드백: ${content.arcsElements.satisfaction?.feedbackType || '-'}</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="json-toggle" onclick="toggleJson()">🔧 JSON 데이터 보기</button>
+        <pre class="json-content" id="jsonContent">${JSON.stringify(content, null, 2)}</pre>
+      `;
+
+      document.getElementById('resultContent').innerHTML = html;
+    }
+
+    function getElementTypeName(type) {
+      const names = {
+        text: '📝 텍스트',
+        image: '🖼️ 이미지',
+        audio: '🔊 오디오',
+        video: '🎬 비디오',
+        animation: '✨ 애니메이션',
+        character_dialogue: '💬 캐릭터 대화'
+      };
+      return names[type] || type;
+    }
+
+    function getInteractionTypeName(type) {
+      const names = {
+        tap_select: '👆 터치해서 선택하기',
+        drag_drop: '✋ 드래그해서 옮기기',
+        draw: '✏️ 그리기/쓰기',
+        voice_input: '🎤 말하기',
+        multiple_choice: '✅ 보기 중 고르기',
+        fill_blank: '📝 빈칸 채우기',
+        matching: '🔗 짝 맞추기',
+        sorting: '📊 순서대로 정렬하기',
+        counting: '🔢 수 세기'
+      };
+      return names[type] || type;
+    }
+
+    function toggleJson() {
+      document.getElementById('jsonContent').classList.toggle('show');
+    }
+  </script>
+</body>
+</html>

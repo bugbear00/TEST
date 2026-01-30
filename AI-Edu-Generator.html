@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI-Edu 콘텐츠 생성기</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { color: white; text-align: center; margin-bottom: 10px; font-size: 2em; }
+    .subtitle { color: rgba(255,255,255,0.9); text-align: center; margin-bottom: 30px; }
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; font-size: 1.1em; }
+    select, input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 1.1em;
+    }
+    select:focus, input:focus { outline: none; border-color: #667eea; }
+    .btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.3em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4); }
+    .result { display: none; }
+    .result.show { display: block; }
+    .result-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f0f0f0; }
+    .result-icon { font-size: 3em; }
+    .result-title { font-size: 1.5em; color: #333; }
+    .section { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+    .section-title { font-size: 1.1em; color: #667eea; margin-bottom: 12px; }
+    .content-item { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+    .interaction-item { background: white; border-radius: 8px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #48bb78; }
+    .tag { display: inline-block; background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; margin-right: 8px; }
+    .tag.green { background: #48bb78; }
+    .tag.orange { background: #ed8936; }
+    .arcs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    @media (max-width: 600px) { .arcs-grid { grid-template-columns: 1fr; } }
+    .arcs-item { background: white; border-radius: 10px; padding: 15px; }
+    .arcs-item h4 { color: #667eea; margin-bottom: 8px; }
+    .json-toggle { background: #f0f0f0; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+    .json-content { display: none; background: #1e1e1e; color: #9cdcfe; padding: 20px; border-radius: 10px; margin-top: 15px; overflow-x: auto; font-family: Consolas, monospace; font-size: 0.85em; white-space: pre-wrap; max-height: 400px; }
+    .json-content.show { display: block; }
+    .copy-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎓 AI-Edu 콘텐츠 생성기</h1>
+    <p class="subtitle">초등 1학년 맞춤형 학습 콘텐츠를 자동으로 생성합니다</p>
+
+    <div class="card">
+      <form id="generateForm">
+        <div class="form-group">
+          <label>📚 교과 선택</label>
+          <select id="subject">
+            <option value="korean">국어</option>
+            <option value="math">수학</option>
+            <option value="digital">디지털 리터러시</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🎯 성취 기준</label>
+          <select id="standard"></select>
+        </div>
+
+        <div class="form-group">
+          <label>📝 콘텐츠 유형</label>
+          <select id="contentType">
+            <option value="lesson">수업 (배우기)</option>
+            <option value="practice">연습 (익히기)</option>
+            <option value="game">게임 (놀이)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🌈 테마 (선택사항)</label>
+          <input type="text" id="theme" placeholder="예: 가족, 동물, 과일, 학교">
+        </div>
+
+        <button type="submit" class="btn">✨ 콘텐츠 생성하기</button>
+      </form>
+    </div>
+
+    <div class="card result" id="resultCard">
+      <div id="resultContent"></div>
+    </div>
+  </div>
+
+<script>
+// 성취 기준 데이터
+const standards = {
+  korean: [
+    { code: '[1국어01-01]', desc: '바른 자세로 듣고 말하며, 고운 말을 사용한다', category: 'listening_speaking' },
+    { code: '[1국어01-02]', desc: '인사말을 상황에 맞게 주고받는다', category: 'listening_speaking' },
+    { code: '[1국어02-01]', desc: '글자와 소리의 관계를 안다', category: 'phonics' },
+    { code: '[1국어02-02]', desc: '낱말과 문장을 소리 내어 읽는다', category: 'reading' },
+    { code: '[1국어03-01]', desc: '글자를 바르게 쓴다', category: 'writing' },
+    { code: '[1국어03-02]', desc: '자신의 생각을 문장으로 표현한다', category: 'writing' }
+  ],
+  math: [
+    { code: '[1수학01-01]', desc: '0부터 9까지의 수 개념 이해, 세고 쓰고 읽기', category: 'counting' },
+    { code: '[1수학01-02]', desc: '두 자리 수의 개념 이해', category: 'counting' },
+    { code: '[1수학01-03]', desc: '한 자리 수의 덧셈과 뺄셈', category: 'addition' },
+    { code: '[1수학02-01]', desc: '여러 가지 모양을 알고 구별하기', category: 'shapes' },
+    { code: '[1수학03-01]', desc: '양을 비교하여 표현하기', category: 'comparison' }
+  ],
+  digital: [
+    { code: '[1디지털01-01]', desc: '디지털 기기의 기본 사용 방법', category: 'device' },
+    { code: '[1디지털01-02]', desc: '학습 앱 탐색과 활용', category: 'app' },
+    { code: '[1디지털02-01]', desc: '디지털 세계에서 안전하게 행동하기', category: 'safety' },
+    { code: '[1디지털02-02]', desc: '디지털 공간에서 예의 바르게 행동하기', category: 'citizenship' }
+  ]
+};
+
+// 콘텐츠 생성 데이터
+const contentData = {
+  characters: {
+    korean: { name: '글자 요정 또또', emoji: '🧚' },
+    math: { name: '숫자 박사 나나', emoji: '🔢' },
+    digital: { name: '디지털 요정 디디', emoji: '💻' }
+  },
+  consonants: ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'],
+  vowels: ['ㅏ', 'ㅑ', 'ㅓ', 'ㅕ', 'ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ', 'ㅣ'],
+  words: {
+    가족: ['아빠', '엄마', '할머니', '할아버지', '언니', '오빠', '동생'],
+    동물: ['강아지', '고양이', '토끼', '새', '물고기', '호랑이', '곰'],
+    과일: ['사과', '바나나', '포도', '수박', '딸기', '귤', '배'],
+    학교: ['선생님', '친구', '교실', '책상', '의자', '칠판', '가방'],
+    자연: ['하늘', '구름', '나무', '꽃', '바다', '산', '강']
+  },
+  countingItems: ['사과', '별', '하트', '공', '꽃', '나비'],
+  shapes: ['동그라미', '세모', '네모'],
+  greetings: [
+    { situation: '아침에 만났을 때', greeting: '안녕하세요!' },
+    { situation: '헤어질 때', greeting: '안녕히 가세요!' },
+    { situation: '고마울 때', greeting: '감사합니다!' },
+    { situation: '미안할 때', greeting: '죄송합니다!' }
+  ],
+  feedback: {
+    correct: ['정말 잘했어! 👏', '와, 대단해! ⭐', '맞았어! 최고야! 🎉', '훌륭해! 👍', '멋져! 정답이야! ✨'],
+    encouraging: ['괜찮아, 다시 해보자! 💪', '조금만 더 생각해 볼까? 🤔', '아깝다! 한 번 더! 😊', '잘 하고 있어, 힘내! 🌟']
+  }
+};
+
+// 유틸리티 함수
+const random = arr => arr[Math.floor(Math.random() * arr.length)];
+const uuid = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  const r = Math.random() * 16 | 0;
+  return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+});
+
+// 콘텐츠 생성 함수
+function generateContent(subject, standardCode, contentType, theme) {
+  const std = standards[subject].find(s => s.code === standardCode);
+  const char = contentData.characters[subject];
+  const themeWords = contentData.words[theme] || contentData.words['가족'];
+
+  let title, elements = [], interactions = [];
+
+  // 교과별 콘텐츠 생성
+  if (subject === 'korean') {
+    if (std.category === 'phonics') {
+      const letter = random(contentData.consonants);
+      title = theme ? `재미있는 글자 나라 - ${theme}` : '재미있는 글자 나라';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'happy', dialogue: '안녕! 오늘은 재미있는 글자를 배워볼 거야!' }},
+        { type: 'text', content: { text: `오늘 배울 글자는 "${letter}" 이에요!` }},
+        { type: 'animation', content: { text: `${letter} 쓰는 순서를 함께 봐요!` }}
+      ];
+      interactions = [
+        { type: 'draw', instruction: `"${letter}"을/를 손가락으로 따라 써 보세요!` },
+        { type: 'tap_select', instruction: `"${letter}"을/를 찾아서 눌러 보세요!`, options: contentData.consonants.slice(0,4).map(l => ({ content: l, isCorrect: l === letter })) }
+      ];
+    } else if (std.category === 'listening_speaking') {
+      const greet = random(contentData.greetings);
+      title = '친구와 이야기해요';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'happy', dialogue: '친구에게 인사해 볼까요?' }},
+        { type: 'text', content: { text: greet.situation }},
+        { type: 'audio', content: { text: '소리를 들어보세요!' }}
+      ];
+      interactions = [
+        { type: 'voice_input', instruction: `"${greet.greeting}" 따라 말해 보세요!` },
+        { type: 'tap_select', instruction: `${greet.situation} 어떻게 말할까요?`, options: contentData.greetings.map(g => ({ content: g.greeting, isCorrect: g === greet })) }
+      ];
+    } else {
+      const word = random(themeWords);
+      title = theme ? `낱말 친구들 - ${theme}` : '낱말 친구들';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'curious', dialogue: `오늘은 ${theme || '여러 가지'} 낱말을 배워볼까?` }},
+        { type: 'image', content: { text: word, imageUrl: `/images/${word}.png` }}
+      ];
+      interactions = [
+        { type: 'matching', instruction: '그림을 보고 맞는 낱말을 찾아 연결해 보세요!', options: themeWords.slice(0,4).map(w => ({ content: w, isCorrect: w === word })) }
+      ];
+    }
+  } else if (subject === 'math') {
+    if (std.category === 'counting') {
+      const item = random(contentData.countingItems);
+      const count = Math.floor(Math.random() * 5) + 1;
+      title = theme ? `수 세기 대작전 - ${theme}` : '수 세기 대작전';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'happy', dialogue: '안녕! 오늘은 수를 세어볼 거야!' }},
+        { type: 'image', content: { text: `${item}가 몇 개 있을까요?`, count: count }},
+        { type: 'text', content: { text: `${item}를 하나씩 세어 보세요!` }}
+      ];
+      interactions = [
+        { type: 'counting', instruction: `${item}를 하나씩 터치하며 세어 보세요!` },
+        { type: 'tap_select', instruction: `${item}는 모두 몇 개일까요?`, options: [count-1, count, count+1, count+2].filter(n => n > 0).map(n => ({ content: n.toString(), isCorrect: n === count })) }
+      ];
+    } else if (std.category === 'addition') {
+      const n1 = Math.floor(Math.random() * 4) + 1;
+      const n2 = Math.floor(Math.random() * (9-n1)) + 1;
+      const answer = n1 + n2;
+      title = '더하기 모험';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'encouraging', dialogue: '더하기를 해볼까요?' }},
+        { type: 'text', content: { text: `${n1} + ${n2} = ?` }}
+      ];
+      interactions = [
+        { type: 'tap_select', instruction: `${n1} + ${n2}는 얼마일까요?`, options: [answer-1, answer, answer+1, answer+2].filter(n => n > 0 && n <= 9).map(n => ({ content: n.toString(), isCorrect: n === answer })) }
+      ];
+    } else if (std.category === 'shapes') {
+      const shape = random(contentData.shapes);
+      title = '모양 탐험대';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'happy', dialogue: '여러 가지 모양을 찾아볼까요?' }},
+        { type: 'image', content: { text: `이것은 ${shape}이에요!` }}
+      ];
+      interactions = [
+        { type: 'tap_select', instruction: `${shape}을/를 찾아 눌러 보세요!`, options: contentData.shapes.map(s => ({ content: s, isCorrect: s === shape })) }
+      ];
+    } else {
+      title = '비교해 보아요';
+      elements = [
+        { type: 'character_dialogue', content: { character: char.name, emotion: 'thinking', dialogue: '어느 것이 더 많을까?' }}
+      ];
+      interactions = [
+        { type: 'tap_select', instruction: '더 많은 쪽을 골라보세요!' }
+      ];
+    }
+  } else { // digital
+    title = std.category === 'device' ? '태블릿 친구와 만나요' :
+            std.category === 'safety' ? '안전한 디지털 세상' : '디지털 예절 배우기';
+    elements = [
+      { type: 'character_dialogue', content: { character: char.name, emotion: 'happy', dialogue: std.category === 'safety' ? '디지털 세상에서 안전하게 지내는 방법을 알아볼까요?' : '디지털 기기를 사용하는 방법을 배워볼까요?' }}
+    ];
+    interactions = [
+      { type: 'tap_select', instruction: '안전한 행동을 골라보세요!' }
+    ];
+  }
+
+  return {
+    id: uuid(),
+    title,
+    subject,
+    gradeLevel: { grade: 1, semester: 1 },
+    achievementStandard: { code: standardCode, description: std.desc },
+    bloomLevel: { primaryLevel: 'understand', cognitiveVerbs: ['설명하다', '비교하다', '구별하다'] },
+    arcsElements: {
+      attention: { strategy: '친근한 캐릭터와 밝은 색상으로 흥미 유발', elements: ['캐릭터 대화', '애니메이션', '효과음'] },
+      relevance: { realWorldConnection: theme || '학교와 가정에서의 일상 경험' },
+      confidence: { successCriteria: '3개 중 2개 이상 맞추면 성공!', scaffolding: ['모범 예시', '힌트 제공', '격려 메시지'] },
+      satisfaction: { feedbackType: 'immediate', rewards: ['칭찬 메시지', '별 보상', '축하 애니메이션'] }
+    },
+    content: { type: contentType, elements, interactions, duration: { estimated: 10 } },
+    accessibility: { textToSpeech: true, fontSize: 'large', selfPacedLearning: true },
+    metadata: { createdAt: new Date().toISOString(), version: '1.0.0' }
+  };
+}
+
+// 드롭다운 업데이트
+function updateStandards() {
+  const subject = document.getElementById('subject').value;
+  const select = document.getElementById('standard');
+  select.innerHTML = '';
+  standards[subject].forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.code;
+    opt.textContent = `${s.code} ${s.desc}`;
+    select.appendChild(opt);
+  });
+}
+
+// 결과 표시
+function displayResult(content) {
+  const icons = { korean: '📖', math: '🔢', digital: '💻' };
+  const names = { korean: '국어', math: '수학', digital: '디지털' };
+
+  const html = `
+    <div class="result-header">
+      <span class="result-icon">${icons[content.subject]}</span>
+      <div>
+        <div class="result-title">${content.title}</div>
+        <div>
+          <span class="tag">${names[content.subject]}</span>
+          <span class="tag green">${content.achievementStandard.code}</span>
+          <span class="tag orange">Bloom: ${content.bloomLevel.primaryLevel}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🎯 성취 기준</div>
+      <p><strong>${content.achievementStandard.code}</strong> ${content.achievementStandard.description}</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📚 학습 콘텐츠</div>
+      ${content.content.elements.map(el => `
+        <div class="content-item">
+          <strong>${el.type === 'character_dialogue' ? '💬 캐릭터 대화' : el.type === 'text' ? '📝 텍스트' : el.type === 'image' ? '🖼️ 이미지' : el.type === 'animation' ? '✨ 애니메이션' : '🔊 오디오'}</strong>
+          <p>${el.content?.dialogue || el.content?.text || ''}</p>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section">
+      <div class="section-title">✋ 상호작용 활동</div>
+      ${content.content.interactions.map(int => `
+        <div class="interaction-item">
+          <strong>${int.type === 'tap_select' ? '👆 터치해서 선택하기' : int.type === 'draw' ? '✏️ 그리기/쓰기' : int.type === 'voice_input' ? '🎤 말하기' : int.type === 'matching' ? '🔗 짝 맞추기' : '🔢 수 세기'}</strong>
+          <p>${int.instruction}</p>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="section">
+      <div class="section-title">💡 ARCS 동기 요소</div>
+      <div class="arcs-grid">
+        <div class="arcs-item"><h4>👀 주의(Attention)</h4><p>${content.arcsElements.attention.strategy}</p></div>
+        <div class="arcs-item"><h4>🔗 관련성(Relevance)</h4><p>${content.arcsElements.relevance.realWorldConnection}</p></div>
+        <div class="arcs-item"><h4>💪 자신감(Confidence)</h4><p>${content.arcsElements.confidence.successCriteria}</p></div>
+        <div class="arcs-item"><h4>🎉 만족감(Satisfaction)</h4><p>피드백: ${content.arcsElements.satisfaction.feedbackType}</p></div>
+      </div>
+    </div>
+
+    <button class="json-toggle" onclick="document.getElementById('jsonContent').classList.toggle('show')">🔧 JSON 데이터 보기</button>
+    <button class="copy-btn" onclick="copyJson()">📋 JSON 복사</button>
+    <pre class="json-content" id="jsonContent">${JSON.stringify(content, null, 2)}</pre>
+  `;
+
+  document.getElementById('resultContent').innerHTML = html;
+  document.getElementById('resultCard').classList.add('show');
+  window.generatedContent = content;
+}
+
+function copyJson() {
+  navigator.clipboard.writeText(JSON.stringify(window.generatedContent, null, 2));
+  alert('JSON이 클립보드에 복사되었습니다!');
+}
+
+// 이벤트 리스너
+document.getElementById('subject').addEventListener('change', updateStandards);
+document.getElementById('generateForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const content = generateContent(
+    document.getElementById('subject').value,
+    document.getElementById('standard').value,
+    document.getElementById('contentType').value,
+    document.getElementById('theme').value
+  );
+  displayResult(content);
+});
+
+updateStandards();
+</script>
+</body>
+</html>

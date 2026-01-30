@@ -1,0 +1,455 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-edu.kr/schemas/learning-activity.json",
+  "title": "LearningActivity",
+  "description": "초등 1학년 학습 활동 데이터 구조",
+  "type": "object",
+  "required": ["id", "type", "title", "targetSkills", "steps"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "활동 고유 식별자"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "phonics_practice",
+        "reading_comprehension",
+        "writing_practice",
+        "number_sense",
+        "calculation_drill",
+        "problem_solving",
+        "pattern_recognition",
+        "digital_navigation",
+        "creative_expression",
+        "collaborative_task"
+      ],
+      "description": "활동 유형"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "활동 제목 (아이 친화적)"
+    },
+    "description": {
+      "type": "string",
+      "description": "활동 설명"
+    },
+    "character": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "안내 캐릭터 이름"
+        },
+        "avatarUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "voiceId": {
+          "type": "string",
+          "description": "캐릭터 음성 ID"
+        }
+      },
+      "description": "활동 안내 캐릭터"
+    },
+    "targetSkills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "enum": ["literacy", "numeracy", "digital", "social_emotional"],
+            "description": "기초 소양 영역"
+          },
+          "skill": {
+            "type": "string",
+            "description": "세부 기술"
+          },
+          "level": {
+            "type": "string",
+            "enum": ["emerging", "developing", "proficient", "advanced"],
+            "description": "숙달 수준"
+          }
+        }
+      },
+      "description": "목표 기술"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/activityStep"
+      },
+      "minItems": 1,
+      "description": "활동 단계"
+    },
+    "scaffolding": {
+      "$ref": "#/$defs/scaffoldingOptions"
+    },
+    "assessment": {
+      "$ref": "#/$defs/activityAssessment"
+    },
+    "gamification": {
+      "$ref": "#/$defs/gamificationElements"
+    }
+  },
+  "$defs": {
+    "activityStep": {
+      "type": "object",
+      "required": ["order", "instruction", "interaction"],
+      "properties": {
+        "order": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "단계 순서"
+        },
+        "title": {
+          "type": "string",
+          "description": "단계 제목"
+        },
+        "instruction": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "안내 텍스트"
+            },
+            "audioUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "안내 음성"
+            },
+            "animationId": {
+              "type": "string",
+              "description": "안내 애니메이션 ID"
+            }
+          },
+          "description": "단계 안내"
+        },
+        "interaction": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "watch",
+                "listen",
+                "tap",
+                "drag",
+                "draw",
+                "speak",
+                "type",
+                "select",
+                "arrange"
+              ],
+              "description": "상호작용 유형"
+            },
+            "data": {
+              "type": "object",
+              "description": "상호작용 데이터"
+            },
+            "validation": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["exact", "partial", "fuzzy", "ai_evaluated", "self_check"],
+                  "description": "검증 유형"
+                },
+                "criteria": {
+                  "type": "object",
+                  "description": "검증 기준"
+                }
+              }
+            }
+          },
+          "description": "상호작용 설정"
+        },
+        "feedback": {
+          "type": "object",
+          "properties": {
+            "onSuccess": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "audioUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "effect": {
+                  "type": "string",
+                  "enum": ["confetti", "stars", "character_dance", "sound_effect"]
+                }
+              }
+            },
+            "onFailure": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "hint": {
+                  "type": "string"
+                },
+                "audioUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "showCorrect": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
+          },
+          "description": "피드백 설정"
+        },
+        "timeLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "제한 시간(초), 0이면 무제한"
+        },
+        "skipAllowed": {
+          "type": "boolean",
+          "default": false,
+          "description": "건너뛰기 허용"
+        }
+      }
+    },
+    "scaffoldingOptions": {
+      "type": "object",
+      "description": "단계별 지원 옵션",
+      "properties": {
+        "hints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3
+              },
+              "content": {
+                "type": "string"
+              },
+              "audioUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "visualHint": {
+                "type": "string",
+                "description": "시각적 힌트 (하이라이트, 화살표 등)"
+              }
+            }
+          },
+          "description": "단계별 힌트"
+        },
+        "modelAnswer": {
+          "type": "object",
+          "properties": {
+            "showAfterAttempts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "content": {
+              "type": "string"
+            },
+            "demonstrationUrl": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "description": "모범 답안 표시"
+        },
+        "simplifiedVersion": {
+          "type": "object",
+          "properties": {
+            "available": {
+              "type": "boolean"
+            },
+            "activityId": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "description": "쉬운 버전 연결"
+        },
+        "peerSupport": {
+          "type": "boolean",
+          "default": false,
+          "description": "또래 도움 요청 가능"
+        }
+      }
+    },
+    "activityAssessment": {
+      "type": "object",
+      "description": "활동 평가",
+      "properties": {
+        "rubric": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterion": {
+                "type": "string",
+                "description": "평가 기준"
+              },
+              "weight": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "가중치"
+              },
+              "levels": {
+                "type": "object",
+                "properties": {
+                  "4": {
+                    "type": "string"
+                  },
+                  "3": {
+                    "type": "string"
+                  },
+                  "2": {
+                    "type": "string"
+                  },
+                  "1": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "description": "루브릭"
+        },
+        "passingScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "통과 점수"
+        },
+        "retryPolicy": {
+          "type": "object",
+          "properties": {
+            "maxRetries": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "cooldownMinutes": {
+              "type": "integer"
+            }
+          },
+          "description": "재시도 정책"
+        },
+        "progressTracking": {
+          "type": "object",
+          "properties": {
+            "trackTime": {
+              "type": "boolean",
+              "default": true
+            },
+            "trackAttempts": {
+              "type": "boolean",
+              "default": true
+            },
+            "trackHintsUsed": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          "description": "진행 추적"
+        }
+      }
+    },
+    "gamificationElements": {
+      "type": "object",
+      "description": "게임화 요소",
+      "properties": {
+        "points": {
+          "type": "object",
+          "properties": {
+            "baseReward": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bonusConditions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "condition": {
+                    "type": "string",
+                    "enum": ["first_try", "no_hints", "fast_completion", "streak"]
+                  },
+                  "bonusPoints": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "description": "포인트 보상"
+        },
+        "badges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "condition": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "배지"
+        },
+        "streakBonus": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "multiplier": {
+              "type": "number",
+              "minimum": 1
+            }
+          },
+          "description": "연속 정답 보너스"
+        },
+        "characterUnlocks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "characterId": {
+                "type": "string"
+              },
+              "itemType": {
+                "type": "string",
+                "enum": ["hat", "accessory", "background", "pet"]
+              },
+              "unlockCondition": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "캐릭터 아이템 해금"
+        }
+      }
+    }
+  }
+}

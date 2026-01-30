@@ -1,0 +1,632 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-edu.kr/schemas/learning-content.json",
+  "title": "LearningContent",
+  "description": "초등 1학년 학습 콘텐츠 데이터 구조",
+  "type": "object",
+  "required": ["id", "title", "subject", "achievementStandard", "bloomLevel", "arcsElements", "content", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "콘텐츠 고유 식별자"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "학습 콘텐츠 제목 (아이 친화적 표현)"
+    },
+    "subject": {
+      "type": "string",
+      "enum": ["korean", "math", "digital_literacy", "integrated_subject"],
+      "description": "교과 영역"
+    },
+    "gradeLevel": {
+      "type": "object",
+      "properties": {
+        "grade": {
+          "type": "integer",
+          "const": 1,
+          "description": "학년 (1학년 고정)"
+        },
+        "semester": {
+          "type": "integer",
+          "enum": [1, 2],
+          "description": "학기"
+        },
+        "unit": {
+          "type": "string",
+          "description": "단원명"
+        },
+        "week": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 17,
+          "description": "주차"
+        }
+      },
+      "required": ["grade", "semester"]
+    },
+    "achievementStandard": {
+      "$ref": "#/$defs/achievementStandard"
+    },
+    "bloomLevel": {
+      "$ref": "#/$defs/bloomTaxonomy"
+    },
+    "arcsElements": {
+      "$ref": "#/$defs/arcsMotivation"
+    },
+    "content": {
+      "$ref": "#/$defs/contentBody"
+    },
+    "accessibility": {
+      "$ref": "#/$defs/udlAccessibility"
+    },
+    "metadata": {
+      "$ref": "#/$defs/contentMetadata"
+    }
+  },
+  "$defs": {
+    "achievementStandard": {
+      "type": "object",
+      "description": "2022 개정 교육과정 성취 기준",
+      "required": ["code", "description"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^\\[\\d{1,2}[가-힣]{2,4}\\d{2}-\\d{2}\\]$",
+          "description": "성취 기준 코드 (예: [1국어01-02])"
+        },
+        "description": {
+          "type": "string",
+          "description": "성취 기준 내용"
+        },
+        "learningObjectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "세부 학습 목표"
+        },
+        "assessmentCriteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": ["excellent", "good", "needs_improvement"],
+                "description": "평가 수준"
+              },
+              "description": {
+                "type": "string",
+                "description": "수준별 기준 설명"
+              }
+            }
+          },
+          "description": "평가 기준"
+        }
+      }
+    },
+    "bloomTaxonomy": {
+      "type": "object",
+      "description": "Bloom의 교육 목표 분류학",
+      "required": ["primaryLevel"],
+      "properties": {
+        "primaryLevel": {
+          "type": "string",
+          "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
+          "description": "주요 인지 수준"
+        },
+        "secondaryLevel": {
+          "type": "string",
+          "enum": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
+          "description": "보조 인지 수준"
+        },
+        "cognitiveVerbs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "관련 인지 동사 (예: 기억하다, 이해하다, 적용하다)"
+        }
+      }
+    },
+    "arcsMotivation": {
+      "type": "object",
+      "description": "ARCS 동기 모델 요소",
+      "properties": {
+        "attention": {
+          "type": "object",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "description": "주의 집중 전략"
+            },
+            "elements": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "주의 집중 요소 (애니메이션, 캐릭터, 소리 등)"
+            }
+          },
+          "description": "주의(Attention) - 호기심 자극"
+        },
+        "relevance": {
+          "type": "object",
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "description": "관련성 전략"
+            },
+            "realWorldConnection": {
+              "type": "string",
+              "description": "실생활 연결점"
+            }
+          },
+          "description": "관련성(Relevance) - 일상 연결"
+        },
+        "confidence": {
+          "type": "object",
+          "properties": {
+            "scaffolding": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "단계별 지원 요소"
+            },
+            "successCriteria": {
+              "type": "string",
+              "description": "성공 기준 명시"
+            }
+          },
+          "description": "자신감(Confidence) - 성공 경험"
+        },
+        "satisfaction": {
+          "type": "object",
+          "properties": {
+            "rewards": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["badge", "star", "character_item", "praise", "progress"]
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              },
+              "description": "보상 요소"
+            },
+            "feedbackType": {
+              "type": "string",
+              "enum": ["immediate", "delayed", "formative"],
+              "description": "피드백 유형"
+            }
+          },
+          "description": "만족감(Satisfaction) - 보상과 인정"
+        }
+      }
+    },
+    "contentBody": {
+      "type": "object",
+      "description": "학습 콘텐츠 본문",
+      "required": ["type", "elements"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["lesson", "practice", "assessment", "game", "story"],
+          "description": "콘텐츠 유형"
+        },
+        "duration": {
+          "type": "object",
+          "properties": {
+            "estimated": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "description": "예상 소요 시간(분)"
+            },
+            "minimum": {
+              "type": "integer",
+              "description": "최소 소요 시간(분)"
+            },
+            "maximum": {
+              "type": "integer",
+              "description": "최대 소요 시간(분)"
+            }
+          }
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contentElement"
+          },
+          "description": "콘텐츠 구성 요소"
+        },
+        "interactions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interactionElement"
+          },
+          "description": "상호작용 요소"
+        }
+      }
+    },
+    "contentElement": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "요소 식별자"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "image", "audio", "video", "animation", "character_dialogue"],
+          "description": "요소 유형"
+        },
+        "content": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "텍스트 내용 (읽기 쉬운 표현)"
+            },
+            "audioUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "음성 파일 URL"
+            },
+            "imageUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "이미지 URL"
+            },
+            "altText": {
+              "type": "string",
+              "description": "대체 텍스트 (접근성)"
+            },
+            "character": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "캐릭터 이름"
+                },
+                "emotion": {
+                  "type": "string",
+                  "enum": ["happy", "curious", "encouraging", "celebrating", "thinking"],
+                  "description": "캐릭터 감정"
+                },
+                "dialogue": {
+                  "type": "string",
+                  "description": "캐릭터 대사"
+                }
+              }
+            }
+          }
+        },
+        "accessibility": {
+          "type": "object",
+          "properties": {
+            "readAloud": {
+              "type": "boolean",
+              "default": true,
+              "description": "음성 읽기 지원"
+            },
+            "highlightText": {
+              "type": "boolean",
+              "default": true,
+              "description": "텍스트 하이라이트"
+            },
+            "fontSize": {
+              "type": "string",
+              "enum": ["small", "medium", "large", "extra-large"],
+              "default": "large",
+              "description": "글자 크기"
+            }
+          }
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "표시 순서"
+        }
+      }
+    },
+    "interactionElement": {
+      "type": "object",
+      "required": ["id", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "상호작용 요소 ID"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "tap_select",
+            "drag_drop",
+            "draw",
+            "voice_input",
+            "multiple_choice",
+            "fill_blank",
+            "matching",
+            "sorting",
+            "counting"
+          ],
+          "description": "상호작용 유형"
+        },
+        "instruction": {
+          "type": "string",
+          "description": "활동 안내 (아이 친화적 표현)"
+        },
+        "instructionAudio": {
+          "type": "string",
+          "format": "uri",
+          "description": "안내 음성 URL"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "isCorrect": {
+                "type": "boolean"
+              }
+            }
+          },
+          "description": "선택지 목록"
+        },
+        "feedback": {
+          "type": "object",
+          "properties": {
+            "correct": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "정답 피드백 메시지"
+                },
+                "audioUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "animation": {
+                  "type": "string",
+                  "enum": ["celebrate", "star_burst", "character_cheer"]
+                }
+              }
+            },
+            "incorrect": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "description": "격려 피드백 메시지"
+                },
+                "hint": {
+                  "type": "string",
+                  "description": "힌트 메시지"
+                },
+                "audioUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "maxAttempts": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5,
+                  "default": 3,
+                  "description": "최대 시도 횟수"
+                }
+              }
+            }
+          },
+          "description": "피드백 설정"
+        },
+        "adaptiveDifficulty": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "decreaseOn": {
+              "type": "integer",
+              "description": "연속 오답 시 난이도 하향"
+            },
+            "increaseOn": {
+              "type": "integer",
+              "description": "연속 정답 시 난이도 상향"
+            }
+          },
+          "description": "적응형 난이도 조절"
+        }
+      }
+    },
+    "udlAccessibility": {
+      "type": "object",
+      "description": "UDL(보편적 학습 설계) 접근성 옵션",
+      "properties": {
+        "representation": {
+          "type": "object",
+          "description": "다양한 표현 방식",
+          "properties": {
+            "textToSpeech": {
+              "type": "boolean",
+              "default": true,
+              "description": "텍스트 음성 변환"
+            },
+            "visualSupports": {
+              "type": "boolean",
+              "default": true,
+              "description": "시각적 보조"
+            },
+            "simplifiedLanguage": {
+              "type": "boolean",
+              "default": true,
+              "description": "쉬운 언어 사용"
+            },
+            "multipleFormats": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["text", "audio", "image", "video", "animation"]
+              },
+              "description": "제공 형식"
+            }
+          }
+        },
+        "engagement": {
+          "type": "object",
+          "description": "다양한 참여 방식",
+          "properties": {
+            "choiceOptions": {
+              "type": "boolean",
+              "default": true,
+              "description": "선택권 제공"
+            },
+            "selfPacedLearning": {
+              "type": "boolean",
+              "default": true,
+              "description": "자기 속도 학습"
+            },
+            "collaborativeOption": {
+              "type": "boolean",
+              "default": false,
+              "description": "협동 학습 옵션"
+            }
+          }
+        },
+        "action": {
+          "type": "object",
+          "description": "다양한 표현 및 행동 방식",
+          "properties": {
+            "inputMethods": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["touch", "voice", "keyboard", "switch"]
+              },
+              "default": ["touch", "voice"],
+              "description": "입력 방식"
+            },
+            "responseFormats": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["select", "draw", "speak", "type"]
+              },
+              "description": "응답 형식"
+            }
+          }
+        },
+        "display": {
+          "type": "object",
+          "description": "화면 표시 설정",
+          "properties": {
+            "fontSize": {
+              "type": "string",
+              "enum": ["small", "medium", "large", "extra-large"],
+              "default": "large"
+            },
+            "fontFamily": {
+              "type": "string",
+              "default": "나눔바른고딕",
+              "description": "글꼴 (읽기 쉬운 글꼴)"
+            },
+            "lineSpacing": {
+              "type": "number",
+              "minimum": 1.0,
+              "maximum": 2.5,
+              "default": 1.8,
+              "description": "줄 간격"
+            },
+            "highContrast": {
+              "type": "boolean",
+              "default": false,
+              "description": "고대비 모드"
+            },
+            "colorBlindMode": {
+              "type": "string",
+              "enum": ["none", "protanopia", "deuteranopia", "tritanopia"],
+              "default": "none",
+              "description": "색맹 지원 모드"
+            }
+          }
+        }
+      }
+    },
+    "contentMetadata": {
+      "type": "object",
+      "required": ["createdAt", "version"],
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "생성 일시"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "수정 일시"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "콘텐츠 버전"
+        },
+        "author": {
+          "type": "string",
+          "description": "제작자"
+        },
+        "reviewStatus": {
+          "type": "string",
+          "enum": ["draft", "review", "approved", "published"],
+          "description": "검토 상태"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "태그"
+        },
+        "prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "선수 학습 콘텐츠 ID"
+        },
+        "relatedContents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "관련 콘텐츠 ID"
+        }
+      }
+    }
+  }
+}

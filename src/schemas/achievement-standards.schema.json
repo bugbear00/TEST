@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-edu.kr/schemas/achievement-standards.json",
+  "title": "AchievementStandards",
+  "description": "2022 개정 교육과정 초등 1학년 성취 기준 데이터베이스",
+  "type": "object",
+  "required": ["curriculum", "subjects"],
+  "properties": {
+    "curriculum": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "integer",
+          "const": 2022,
+          "description": "교육과정 개정 연도"
+        },
+        "name": {
+          "type": "string",
+          "default": "2022 개정 교육과정",
+          "description": "교육과정 명칭"
+        },
+        "targetGrade": {
+          "type": "integer",
+          "const": 1,
+          "description": "대상 학년"
+        }
+      }
+    },
+    "subjects": {
+      "type": "object",
+      "properties": {
+        "korean": {
+          "$ref": "#/$defs/subjectStandards"
+        },
+        "math": {
+          "$ref": "#/$defs/subjectStandards"
+        },
+        "integratedSubject": {
+          "$ref": "#/$defs/integratedSubjectStandards"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "subjectStandards": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "교과명"
+        },
+        "domains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/domainStandards"
+          },
+          "description": "영역별 성취 기준"
+        }
+      }
+    },
+    "domainStandards": {
+      "type": "object",
+      "required": ["code", "name", "standards"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "영역 코드"
+        },
+        "name": {
+          "type": "string",
+          "description": "영역명"
+        },
+        "description": {
+          "type": "string",
+          "description": "영역 설명"
+        },
+        "standards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/standard"
+          },
+          "description": "성취 기준 목록"
+        }
+      }
+    },
+    "standard": {
+      "type": "object",
+      "required": ["code", "content"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^\\[\\d{1,2}[가-힣]{2,4}\\d{2}-\\d{2}\\]$",
+          "description": "성취 기준 코드"
+        },
+        "content": {
+          "type": "string",
+          "description": "성취 기준 내용"
+        },
+        "explanation": {
+          "type": "string",
+          "description": "성취 기준 해설"
+        },
+        "keyCompetencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "self_management",
+              "knowledge_information_processing",
+              "creative_thinking",
+              "aesthetic_sensibility",
+              "communication",
+              "community"
+            ]
+          },
+          "description": "관련 핵심 역량"
+        },
+        "assessmentMethods": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "observation",
+              "portfolio",
+              "performance",
+              "self_assessment",
+              "peer_assessment",
+              "written_test"
+            ]
+          },
+          "description": "평가 방법"
+        },
+        "levelDescriptors": {
+          "type": "object",
+          "properties": {
+            "excellent": {
+              "type": "string",
+              "description": "매우 잘함"
+            },
+            "good": {
+              "type": "string",
+              "description": "잘함"
+            },
+            "satisfactory": {
+              "type": "string",
+              "description": "보통"
+            },
+            "needsImprovement": {
+              "type": "string",
+              "description": "노력 요함"
+            }
+          },
+          "description": "수준별 성취 기술"
+        }
+      }
+    },
+    "integratedSubjectStandards": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "default": "통합교과",
+          "description": "교과명"
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "enum": ["학교", "나", "가족", "마을", "봄", "여름", "가을", "겨울"]
+              },
+              "semester": {
+                "type": "integer",
+                "enum": [1, 2]
+              },
+              "standards": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/standard"
+                }
+              }
+            }
+          },
+          "description": "주제별 성취 기준"
+        }
+      }
+    }
+  }
+}

@@ -80,27 +80,27 @@ export interface ActionOptions {
 /** 보조 도구 설정 */
 export interface AssistiveTools {
   /** 손글씨 인식 */
-  handwritingRecognition: boolean;
+  handwritingRecognition?: boolean;
   /** 음성 인식 */
-  voiceRecognition: boolean;
+  voiceRecognition?: boolean;
   /** 자동 완성 */
-  autoComplete: boolean;
+  autoComplete?: boolean;
   /** 예측 텍스트 */
-  predictiveText: boolean;
+  predictiveText?: boolean;
   /** 화면 확대 */
-  screenMagnification: boolean;
+  screenMagnification?: boolean;
 }
 
 /** 시간 설정 */
 export interface TimingOptions {
   /** 시간 제한 해제 가능 */
-  unlimitedTime: boolean;
+  unlimitedTime?: boolean;
   /** 추가 시간 비율 (1.0 = 기본, 1.5 = 50% 추가) */
-  extraTimeMultiplier: number;
+  extraTimeMultiplier?: number;
   /** 자동 일시정지 */
-  autoPause: boolean;
+  autoPause?: boolean;
   /** 쉬는 시간 알림 */
-  breakReminders: boolean;
+  breakReminders?: boolean;
   /** 쉬는 시간 간격(분) */
   breakInterval?: number;
 }

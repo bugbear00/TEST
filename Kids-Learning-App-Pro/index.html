@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Kids Learning App Pro</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* 메인 메뉴 */
+    .main-menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .main-title {
+      font-size: 2.2em;
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .menu-btn {
+      background: white;
+      border: none;
+      border-radius: 20px;
+      padding: 25px 15px;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .menu-btn:hover, .menu-btn:active {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    }
+
+    .menu-btn.math { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); }
+    .menu-btn.english { background: linear-gradient(135deg, #87CEEB 0%, #4169E1 100%); color: white; }
+
+    .menu-icon { font-size: 2.5em; }
+
+    /* 게임 화면 공통 */
+    .game-screen {
+      display: none;
+      min-height: 100vh;
+      padding: 15px;
+      padding-bottom: 100px;
+    }
+
+    .game-screen.active { display: block; }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .back-btn {
+      background: white;
+      border: none;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      font-size: 1.3em;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+
+    .score-display {
+      background: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 1.1em;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+
+    .game-title {
+      font-size: 1.3em;
+      color: #333;
+      text-align: center;
+      flex: 1;
+      white-space: nowrap;
+    }
+
+    /* 선택 버튼들 */
+    .selector {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .selector-btn {
+      background: white;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      padding: 10px 15px;
+      font-size: 0.95em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .selector-btn.active {
+      border-color: #4169E1;
+      background: #4169E1;
+      color: white;
+    }
+
+    /* 문제 카드 */
+    .question-card {
+      background: white;
+      border-radius: 25px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      max-width: 500px;
+      margin: 0 auto 20px;
+    }
+
+    .question-text {
+      font-size: 2.5em;
+      color: #333;
+      margin-bottom: 20px;
+      font-weight: bold;
+      line-height: 1.3;
+    }
+
+    .question-sub {
+      font-size: 1.3em;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    /* 시각적 객체 표시 */
+    .visual-objects {
+      font-size: 2em;
+      margin: 15px 0;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    /* 답 버튼들 */
+    .answers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .answers-grid.single-col {
+      grid-template-columns: 1fr;
+    }
+
+    .answer-btn {
+      background: white;
+      border: 3px solid #ddd;
+      border-radius: 15px;
+      padding: 18px 10px;
+      font-size: 1.5em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      word-break: keep-all;
+    }
+
+    .answer-btn:hover, .answer-btn:active {
+      border-color: #4169E1;
+      background: #f0f8ff;
+      transform: scale(1.02);
+    }
+
+    .answer-btn.correct {
+      background: #90EE90 !important;
+      border-color: #32CD32 !important;
+      animation: correct-pulse 0.5s;
+    }
+
+    .answer-btn.wrong {
+      background: #FFB6C1 !important;
+      border-color: #FF6B6B !important;
+      animation: wrong-shake 0.5s;
+    }
+
+    @keyframes correct-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    @keyframes wrong-shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+
+    /* 입력 필드 */
+    .input-area {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .answer-input {
+      font-size: 1.5em;
+      padding: 15px 20px;
+      border: 3px solid #4169E1;
+      border-radius: 15px;
+      text-align: center;
+      width: 200px;
+      outline: none;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 15px;
+      padding: 15px 30px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* 피드백 */
+    .feedback {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4em;
+      z-index: 100;
+      animation: feedback-pop 0.8s forwards;
+      pointer-events: none;
+    }
+
+    @keyframes feedback-pop {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    /* 영어 학습 카드 */
+    .learn-card {
+      background: white;
+      border-radius: 25px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      max-width: 500px;
+      margin: 0 auto 20px;
+    }
+
+    .word-image { font-size: 5em; margin-bottom: 15px; }
+    .word-english { font-size: 2.2em; color: #4169E1; font-weight: bold; margin-bottom: 8px; }
+    .word-korean { font-size: 1.5em; color: #666; margin-bottom: 15px; }
+
+    .speak-btn {
+      background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      font-size: 1.8em;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 5px 20px rgba(255,107,107,0.4);
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .nav-btn {
+      background: white;
+      border: 3px solid #4169E1;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      font-size: 1.3em;
+      cursor: pointer;
+    }
+
+    /* 진행 바 */
+    .progress-bar {
+      background: rgba(255,255,255,0.5);
+      border-radius: 10px;
+      height: 15px;
+      margin: 15px auto;
+      max-width: 500px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #FFD700, #FFA500);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s;
+    }
+
+    /* 결과 화면 */
+    .result-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .result-screen.active { display: flex; }
+
+    .result-card {
+      background: white;
+      border-radius: 25px;
+      padding: 40px 30px;
+      text-align: center;
+      max-width: 350px;
+      margin: 20px;
+    }
+
+    .result-emoji { font-size: 4em; margin-bottom: 15px; }
+    .result-title { font-size: 1.8em; color: #333; margin-bottom: 10px; }
+    .result-score { font-size: 2.5em; color: #FFD700; font-weight: bold; margin-bottom: 25px; }
+
+    .result-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 20px;
+      padding: 15px 30px;
+      font-size: 1.1em;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      margin: 8px;
+    }
+
+    /* 철자 입력 */
+    .spelling-area {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .letter-box {
+      width: 45px;
+      height: 55px;
+      border: 3px solid #4169E1;
+      border-radius: 10px;
+      font-size: 1.8em;
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    .letter-box.correct { border-color: #32CD32; background: #90EE90; }
+    .letter-box.wrong { border-color: #FF6B6B; background: #FFB6C1; }
+
+    /* 비교 문제 */
+    .compare-area {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      font-size: 2.5em;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    .compare-num {
+      background: white;
+      padding: 15px 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .compare-btns {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .compare-btn {
+      background: white;
+      border: 3px solid #FFD700;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 1.5em;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .compare-btn:hover { background: #FFF8DC; }
+
+    /* 모바일 최적화 */
+    @media (max-width: 500px) {
+      .question-text { font-size: 2em; }
+      .answer-btn { font-size: 1.3em; padding: 15px 8px; }
+      .visual-objects { font-size: 1.5em; }
+      .letter-box { width: 38px; height: 48px; font-size: 1.5em; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 메인 메뉴 -->
+<div id="mainMenu" class="main-menu">
+  <h1 class="main-title">Kids Learning App Pro</h1>
+  <div class="menu-grid">
+    <button class="menu-btn math" onclick="startMath()">
+      <span class="menu-icon">🔢</span>
+      <span>수학</span>
+    </button>
+    <button class="menu-btn english" onclick="startEnglish()">
+      <span class="menu-icon">🔤</span>
+      <span>영어</span>
+    </button>
+  </div>
+</div>
+
+<!-- 수학 게임 -->
+<div id="mathGame" class="game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">🏠</button>
+    <span class="game-title">🔢 수학</span>
+    <div class="score-display">⭐ <span id="mathScore">0</span></div>
+  </div>
+
+  <div class="selector" id="gradeSelector">
+    <button class="selector-btn active" onclick="setMathGrade(1)">1학년</button>
+    <button class="selector-btn" onclick="setMathGrade(2)">2학년</button>
+    <button class="selector-btn" onclick="setMathGrade(3)">3학년</button>
+  </div>
+
+  <div class="selector" id="mathTypeSelector">
+    <button class="selector-btn active" onclick="setMathType('calc')">계산</button>
+    <button class="selector-btn" onclick="setMathType('count')">세기</button>
+    <button class="selector-btn" onclick="setMathType('compare')">비교</button>
+    <button class="selector-btn" onclick="setMathType('blank')">빈칸</button>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="mathProgress" style="width: 0%"></div>
+  </div>
+
+  <div id="mathContent">
+    <!-- 동적 생성 -->
+  </div>
+</div>
+
+<!-- 영어 게임 -->
+<div id="englishGame" class="game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">🏠</button>
+    <span class="game-title">🔤 영어</span>
+    <div class="score-display">⭐ <span id="englishScore">0</span></div>
+  </div>
+
+  <div class="selector" id="levelSelector">
+    <button class="selector-btn active" onclick="setEnglishLevel('basic')">기초</button>
+    <button class="selector-btn" onclick="setEnglishLevel('intermediate')">중급</button>
+    <button class="selector-btn" onclick="setEnglishLevel('sentences')">문장</button>
+  </div>
+
+  <div class="selector" id="engTypeSelector">
+    <button class="selector-btn active" onclick="setEnglishType('learn')">배우기</button>
+    <button class="selector-btn" onclick="setEnglishType('quiz')">뜻 맞추기</button>
+    <button class="selector-btn" onclick="setEnglishType('listen')">듣기</button>
+    <button class="selector-btn" onclick="setEnglishType('spell')">철자</button>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="englishProgress" style="width: 0%"></div>
+  </div>
+
+  <div id="englishContent">
+    <!-- 동적 생성 -->
+  </div>
+</div>
+
+<!-- 결과 화면 -->
+<div id="resultScreen" class="result-screen">
+  <div class="result-card">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <div class="result-title" id="resultTitle">잘했어요!</div>
+    <div class="result-score" id="resultScore">10/10</div>
+    <button class="result-btn" onclick="continueGame()">계속하기</button>
+    <button class="result-btn" onclick="goHome()">🏠 홈으로</button>
+  </div>
+</div>
+
+<!-- 피드백 이펙트 -->
+<div id="feedback" class="feedback" style="display:none;"></div>
+
+<script>
+// ========== 영어 데이터 ==========
+const englishData = {
+  basic: [
+    // 과일 (15)
+    { word: 'Apple', korean: '사과', image: '🍎' },
+    { word: 'Banana', korean: '바나나', image: '🍌' },
+    { word: 'Orange', korean: '오렌지', image: '🍊' },
+    { word: 'Grapes', korean: '포도', image: '🍇' },
+    { word: 'Strawberry', korean: '딸기', image: '🍓' },
+    { word: 'Watermelon', korean: '수박', image: '🍉' },
+    { word: 'Peach', korean: '복숭아', image: '🍑' },
+    { word: 'Cherry', korean: '체리', image: '🍒' },
+    { word: 'Lemon', korean: '레몬', image: '🍋' },
+    { word: 'Pineapple', korean: '파인애플', image: '🍍' },
+    { word: 'Mango', korean: '망고', image: '🥭' },
+    { word: 'Kiwi', korean: '키위', image: '🥝' },
+    { word: 'Melon', korean: '멜론', image: '🍈' },
+    { word: 'Pear', korean: '배', image: '🍐' },
+    { word: 'Coconut', korean: '코코넛', image: '🥥' },
+    // 동물 (30)
+    { word: 'Cat', korean: '고양이', image: '🐱' },
+    { word: 'Dog', korean: '강아지', image: '🐕' },
+    { word: 'Elephant', korean: '코끼리', image: '🐘' },
+    { word: 'Lion', korean: '사자', image: '🦁' },
+    { word: 'Tiger', korean: '호랑이', image: '🐯' },
+    { word: 'Bear', korean: '곰', image: '🐻' },
+    { word: 'Rabbit', korean: '토끼', image: '🐰' },
+    { word: 'Mouse', korean: '쥐', image: '🐭' },
+    { word: 'Monkey', korean: '원숭이', image: '🐵' },
+    { word: 'Pig', korean: '돼지', image: '🐷' },
+    { word: 'Cow', korean: '소', image: '🐄' },
+    { word: 'Horse', korean: '말', image: '🐴' },
+    { word: 'Sheep', korean: '양', image: '🐑' },
+    { word: 'Chicken', korean: '닭', image: '🐔' },
+    { word: 'Duck', korean: '오리', image: '🦆' },
+    { word: 'Bird', korean: '새', image: '🐦' },
+    { word: 'Fish', korean: '물고기', image: '🐟' },
+    { word: 'Frog', korean: '개구리', image: '🐸' },
+    { word: 'Snake', korean: '뱀', image: '🐍' },
+    { word: 'Turtle', korean: '거북이', image: '🐢' },
+    { word: 'Zebra', korean: '얼룩말', image: '🦓' },
+    { word: 'Giraffe', korean: '기린', image: '🦒' },
+    { word: 'Panda', korean: '판다', image: '🐼' },
+    { word: 'Koala', korean: '코알라', image: '🐨' },
+    { word: 'Wolf', korean: '늑대', image: '🐺' },
+    { word: 'Fox', korean: '여우', image: '🦊' },
+    { word: 'Deer', korean: '사슴', image: '🦌' },
+    { word: 'Owl', korean: '부엉이', image: '🦉' },
+    { word: 'Penguin', korean: '펭귄', image: '🐧' },
+    { word: 'Whale', korean: '고래', image: '🐋' },
+    // 사물 (25)
+    { word: 'Book', korean: '책', image: '📕' },
+    { word: 'Pencil', korean: '연필', image: '✏️' },
+    { word: 'Pen', korean: '펜', image: '🖊️' },
+    { word: 'Bag', korean: '가방', image: '🎒' },
+    { word: 'Chair', korean: '의자', image: '🪑' },
+    { word: 'Table', korean: '책상', image: '🪵' },
+    { word: 'Door', korean: '문', image: '🚪' },
+    { word: 'Window', korean: '창문', image: '🪟' },
+    { word: 'Clock', korean: '시계', image: '⏰' },
+    { word: 'Phone', korean: '전화기', image: '📱' },
+    { word: 'Ball', korean: '공', image: '⚽' },
+    { word: 'Doll', korean: '인형', image: '🧸' },
+    { word: 'Car', korean: '자동차', image: '🚗' },
+    { word: 'Bus', korean: '버스', image: '🚌' },
+    { word: 'Train', korean: '기차', image: '🚂' },
+    { word: 'Airplane', korean: '비행기', image: '✈️' },
+    { word: 'Boat', korean: '배', image: '⛵' },
+    { word: 'Bicycle', korean: '자전거', image: '🚲' },
+    { word: 'Key', korean: '열쇠', image: '🔑' },
+    { word: 'Cup', korean: '컵', image: '🥤' },
+    { word: 'Plate', korean: '접시', image: '🍽️' },
+    { word: 'Spoon', korean: '숟가락', image: '🥄' },
+    { word: 'Fork', korean: '포크', image: '🍴' },
+    { word: 'Knife', korean: '칼', image: '🔪' },
+    { word: 'Umbrella', korean: '우산', image: '☂️' },
+    // 자연 (15)
+    { word: 'Sun', korean: '태양', image: '☀️' },
+    { word: 'Moon', korean: '달', image: '🌙' },
+    { word: 'Star', korean: '별', image: '⭐' },
+    { word: 'Cloud', korean: '구름', image: '☁️' },
+    { word: 'Rain', korean: '비', image: '🌧️' },
+    { word: 'Snow', korean: '눈', image: '❄️' },
+    { word: 'Wind', korean: '바람', image: '💨' },
+    { word: 'Tree', korean: '나무', image: '🌳' },
+    { word: 'Flower', korean: '꽃', image: '🌸' },
+    { word: 'Grass', korean: '풀', image: '🌿' },
+    { word: 'Mountain', korean: '산', image: '⛰️' },
+    { word: 'River', korean: '강', image: '🏞️' },
+    { word: 'Sea', korean: '바다', image: '🌊' },
+    { word: 'Sky', korean: '하늘', image: '🌌' },
+    { word: 'Rainbow', korean: '무지개', image: '🌈' },
+    // 음식 (20)
+    { word: 'Bread', korean: '빵', image: '🍞' },
+    { word: 'Rice', korean: '밥', image: '🍚' },
+    { word: 'Egg', korean: '계란', image: '🥚' },
+    { word: 'Milk', korean: '우유', image: '🥛' },
+    { word: 'Water', korean: '물', image: '💧' },
+    { word: 'Juice', korean: '주스', image: '🧃' },
+    { word: 'Cake', korean: '케이크', image: '🎂' },
+    { word: 'Cookie', korean: '쿠키', image: '🍪' },
+    { word: 'Candy', korean: '사탕', image: '🍬' },
+    { word: 'Ice cream', korean: '아이스크림', image: '🍦' },
+    { word: 'Pizza', korean: '피자', image: '🍕' },
+    { word: 'Hamburger', korean: '햄버거', image: '🍔' },
+    { word: 'Soup', korean: '수프', image: '🍲' },
+    { word: 'Noodle', korean: '국수', image: '🍜' },
+    { word: 'Salad', korean: '샐러드', image: '🥗' },
+    { word: 'Cheese', korean: '치즈', image: '🧀' },
+    { word: 'Chicken', korean: '치킨', image: '🍗' },
+    { word: 'Sausage', korean: '소시지', image: '🌭' },
+    { word: 'Popcorn', korean: '팝콘', image: '🍿' },
+    { word: 'Chocolate', korean: '초콜릿', image: '🍫' },
+    // 신체 (10)
+    { word: 'Head', korean: '머리', image: '👤' },
+    { word: 'Eye', korean: '눈', image: '👁️' },
+    { word: 'Nose', korean: '코', image: '👃' },
+    { word: 'Mouth', korean: '입', image: '👄' },
+    { word: 'Ear', korean: '귀', image: '👂' },
+    { word: 'Hand', korean: '손', image: '✋' },
+    { word: 'Foot', korean: '발', image: '🦶' },
+    { word: 'Finger', korean: '손가락', image: '👆' },
+    { word: 'Arm', korean: '팔', image: '💪' },
+    { word: 'Leg', korean: '다리', image: '🦵' },
+    // 가족 (8)
+    { word: 'Mom', korean: '엄마', image: '👩' },
+    { word: 'Dad', korean: '아빠', image: '👨' },
+    { word: 'Brother', korean: '형제', image: '👦' },
+    { word: 'Sister', korean: '자매', image: '👧' },
+    { word: 'Baby', korean: '아기', image: '👶' },
+    { word: 'Friend', korean: '친구', image: '🧑‍🤝‍🧑' },
+    { word: 'Grandma', korean: '할머니', image: '👵' },
+    { word: 'Grandpa', korean: '할아버지', image: '👴' },
+    // 색깔 (10)
+    { word: 'Red', korean: '빨간색', image: '🔴' },
+    { word: 'Blue', korean: '파란색', image: '🔵' },
+    { word: 'Yellow', korean: '노란색', image: '🟡' },
+    { word: 'Green', korean: '초록색', image: '🟢' },
+    { word: 'White', korean: '흰색', image: '⚪' },
+    { word: 'Black', korean: '검은색', image: '⚫' },
+    { word: 'Pink', korean: '분홍색', image: '🩷' },
+    { word: 'Purple', korean: '보라색', image: '🟣' },
+    { word: 'Orange', korean: '주황색', image: '🟠' },
+    { word: 'Brown', korean: '갈색', image: '🟤' },
+    // 숫자 (10)
+    { word: 'One', korean: '하나', image: '1️⃣' },
+    { word: 'Two', korean: '둘', image: '2️⃣' },
+    { word: 'Three', korean: '셋', image: '3️⃣' },
+    { word: 'Four', korean: '넷', image: '4️⃣' },
+    { word: 'Five', korean: '다섯', image: '5️⃣' },
+    { word: 'Six', korean: '여섯', image: '6️⃣' },
+    { word: 'Seven', korean: '일곱', image: '7️⃣' },
+    { word: 'Eight', korean: '여덟', image: '8️⃣' },
+    { word: 'Nine', korean: '아홉', image: '9️⃣' },
+    { word: 'Ten', korean: '열', image: '🔟' },
+    // 장소 (7)
+    { word: 'House', korean: '집', image: '🏠' },
+    { word: 'School', korean: '학교', image: '🏫' },
+    { word: 'Park', korean: '공원', image: '🏞️' },
+    { word: 'Hospital', korean: '병원', image: '🏥' },
+    { word: 'Store', korean: '가게', image: '🏪' },
+    { word: 'Zoo', korean: '동물원', image: '🦁' },
+    { word: 'Beach', korean: '해변', image: '🏖️' }
+  ],
+  intermediate: [
+    // 형용사 (35)
+    { word: 'Big', korean: '큰', image: '🐘' },
+    { word: 'Small', korean: '작은', image: '🐜' },
+    { word: 'Long', korean: '긴', image: '🦒' },
+    { word: 'Short', korean: '짧은', image: '🐁' },
+    { word: 'Fast', korean: '빠른', image: '🚀' },
+    { word: 'Slow', korean: '느린', image: '🐌' },
+    { word: 'Hot', korean: '뜨거운', image: '🔥' },
+    { word: 'Cold', korean: '차가운', image: '🧊' },
+    { word: 'New', korean: '새로운', image: '✨' },
+    { word: 'Old', korean: '오래된', image: '🏚️' },
+    { word: 'Happy', korean: '행복한', image: '😊' },
+    { word: 'Sad', korean: '슬픈', image: '😢' },
+    { word: 'Angry', korean: '화난', image: '😠' },
+    { word: 'Tired', korean: '피곤한', image: '😴' },
+    { word: 'Hungry', korean: '배고픈', image: '🤤' },
+    { word: 'Thirsty', korean: '목마른', image: '💧' },
+    { word: 'Beautiful', korean: '아름다운', image: '🌸' },
+    { word: 'Cute', korean: '귀여운', image: '🥰' },
+    { word: 'Strong', korean: '강한', image: '💪' },
+    { word: 'Weak', korean: '약한', image: '🤕' },
+    { word: 'Smart', korean: '똑똑한', image: '🧠' },
+    { word: 'Kind', korean: '친절한', image: '🤗' },
+    { word: 'Brave', korean: '용감한', image: '🦸' },
+    { word: 'Funny', korean: '재미있는', image: '😂' },
+    { word: 'Delicious', korean: '맛있는', image: '😋' },
+    { word: 'Clean', korean: '깨끗한', image: '✨' },
+    { word: 'Dirty', korean: '더러운', image: '🗑️' },
+    { word: 'Easy', korean: '쉬운', image: '👍' },
+    { word: 'Hard', korean: '어려운', image: '🤔' },
+    { word: 'Important', korean: '중요한', image: '⭐' },
+    { word: 'Quiet', korean: '조용한', image: '🤫' },
+    { word: 'Loud', korean: '시끄러운', image: '📢' },
+    { word: 'Soft', korean: '부드러운', image: '🧸' },
+    { word: 'Heavy', korean: '무거운', image: '🏋️' },
+    { word: 'Light', korean: '가벼운', image: '🪶' },
+    // 동사 (35)
+    { word: 'Run', korean: '달리다', image: '🏃' },
+    { word: 'Walk', korean: '걷다', image: '🚶' },
+    { word: 'Jump', korean: '점프하다', image: '🦘' },
+    { word: 'Swim', korean: '수영하다', image: '🏊' },
+    { word: 'Fly', korean: '날다', image: '🦅' },
+    { word: 'Eat', korean: '먹다', image: '🍽️' },
+    { word: 'Drink', korean: '마시다', image: '🥤' },
+    { word: 'Sleep', korean: '자다', image: '😴' },
+    { word: 'Read', korean: '읽다', image: '📖' },
+    { word: 'Write', korean: '쓰다', image: '✍️' },
+    { word: 'Draw', korean: '그리다', image: '🎨' },
+    { word: 'Sing', korean: '노래하다', image: '🎤' },
+    { word: 'Dance', korean: '춤추다', image: '💃' },
+    { word: 'Play', korean: '놀다', image: '🎮' },
+    { word: 'Study', korean: '공부하다', image: '📚' },
+    { word: 'Work', korean: '일하다', image: '💼' },
+    { word: 'Cook', korean: '요리하다', image: '👨‍🍳' },
+    { word: 'Wash', korean: '씻다', image: '🚿' },
+    { word: 'Listen', korean: '듣다', image: '👂' },
+    { word: 'Watch', korean: '보다', image: '👀' },
+    { word: 'Talk', korean: '말하다', image: '💬' },
+    { word: 'Help', korean: '돕다', image: '🤝' },
+    { word: 'Love', korean: '사랑하다', image: '❤️' },
+    { word: 'Like', korean: '좋아하다', image: '👍' },
+    { word: 'Want', korean: '원하다', image: '🙏' },
+    { word: 'Need', korean: '필요하다', image: '❗' },
+    { word: 'Think', korean: '생각하다', image: '💭' },
+    { word: 'Know', korean: '알다', image: '💡' },
+    { word: 'Give', korean: '주다', image: '🎁' },
+    { word: 'Take', korean: '가져가다', image: '✊' },
+    { word: 'Open', korean: '열다', image: '📂' },
+    { word: 'Close', korean: '닫다', image: '📁' },
+    { word: 'Start', korean: '시작하다', image: '▶️' },
+    { word: 'Stop', korean: '멈추다', image: '⏹️' },
+    { word: 'Wait', korean: '기다리다', image: '⏳' },
+    // 시간/날씨 (20)
+    { word: 'Morning', korean: '아침', image: '🌅' },
+    { word: 'Afternoon', korean: '오후', image: '🌞' },
+    { word: 'Evening', korean: '저녁', image: '🌆' },
+    { word: 'Night', korean: '밤', image: '🌙' },
+    { word: 'Today', korean: '오늘', image: '📅' },
+    { word: 'Tomorrow', korean: '내일', image: '📆' },
+    { word: 'Yesterday', korean: '어제', image: '⏮️' },
+    { word: 'Monday', korean: '월요일', image: '1️⃣' },
+    { word: 'Tuesday', korean: '화요일', image: '2️⃣' },
+    { word: 'Wednesday', korean: '수요일', image: '3️⃣' },
+    { word: 'Thursday', korean: '목요일', image: '4️⃣' },
+    { word: 'Friday', korean: '금요일', image: '5️⃣' },
+    { word: 'Saturday', korean: '토요일', image: '6️⃣' },
+    { word: 'Sunday', korean: '일요일', image: '7️⃣' },
+    { word: 'Sunny', korean: '맑은', image: '☀️' },
+    { word: 'Cloudy', korean: '흐린', image: '☁️' },
+    { word: 'Rainy', korean: '비오는', image: '🌧️' },
+    { word: 'Snowy', korean: '눈오는', image: '❄️' },
+    { word: 'Windy', korean: '바람부는', image: '💨' },
+    { word: 'Weather', korean: '날씨', image: '🌤️' },
+    // 직업 (15)
+    { word: 'Teacher', korean: '선생님', image: '👩‍🏫' },
+    { word: 'Doctor', korean: '의사', image: '👨‍⚕️' },
+    { word: 'Nurse', korean: '간호사', image: '👩‍⚕️' },
+    { word: 'Police', korean: '경찰', image: '👮' },
+    { word: 'Firefighter', korean: '소방관', image: '👨‍🚒' },
+    { word: 'Chef', korean: '요리사', image: '👨‍🍳' },
+    { word: 'Driver', korean: '운전사', image: '🚗' },
+    { word: 'Pilot', korean: '조종사', image: '👨‍✈️' },
+    { word: 'Singer', korean: '가수', image: '🎤' },
+    { word: 'Artist', korean: '화가', image: '🎨' },
+    { word: 'Farmer', korean: '농부', image: '👨‍🌾' },
+    { word: 'Scientist', korean: '과학자', image: '👨‍🔬' },
+    { word: 'Astronaut', korean: '우주비행사', image: '👨‍🚀' },
+    { word: 'Dentist', korean: '치과의사', image: '🦷' },
+    { word: 'Athlete', korean: '운동선수', image: '🏃' }
+  ],
+  sentences: [
+    // 인사 (12)
+    { word: 'Hello!', korean: '안녕하세요!', image: '👋' },
+    { word: 'Hi!', korean: '안녕!', image: '👋' },
+    { word: 'Good morning.', korean: '좋은 아침이에요.', image: '🌅' },
+    { word: 'Good afternoon.', korean: '좋은 오후예요.', image: '🌞' },
+    { word: 'Good evening.', korean: '좋은 저녁이에요.', image: '🌆' },
+    { word: 'Good night.', korean: '잘 자요.', image: '🌙' },
+    { word: 'Goodbye.', korean: '안녕히 가세요.', image: '👋' },
+    { word: 'See you later.', korean: '나중에 봐요.', image: '👋' },
+    { word: 'See you tomorrow.', korean: '내일 봐요.', image: '📅' },
+    { word: 'Nice to meet you.', korean: '만나서 반가워요.', image: '🤝' },
+    { word: 'Long time no see.', korean: '오랜만이에요.', image: '😊' },
+    { word: 'Have a good day.', korean: '좋은 하루 보내세요.', image: '🌞' },
+    // 감사/사과 (8)
+    { word: 'Thank you.', korean: '감사합니다.', image: '🙏' },
+    { word: 'Thanks a lot.', korean: '정말 감사해요.', image: '🙏' },
+    { word: "You're welcome.", korean: '천만에요.', image: '😊' },
+    { word: "I'm sorry.", korean: '미안해요.', image: '😔' },
+    { word: 'Excuse me.', korean: '실례합니다.', image: '🙋' },
+    { word: 'No problem.', korean: '괜찮아요.', image: '👍' },
+    { word: "That's okay.", korean: '괜찮아요.', image: '😊' },
+    { word: 'Never mind.', korean: '신경 쓰지 마세요.', image: '🙂' },
+    // 자기소개 (10)
+    { word: 'My name is...', korean: '제 이름은...이에요.', image: '👤' },
+    { word: 'I am a student.', korean: '저는 학생이에요.', image: '🎒' },
+    { word: 'I am seven years old.', korean: '저는 일곱 살이에요.', image: '7️⃣' },
+    { word: 'I live in Korea.', korean: '저는 한국에 살아요.', image: '🇰🇷' },
+    { word: 'I go to school.', korean: '저는 학교에 다녀요.', image: '🏫' },
+    { word: 'I have a pet.', korean: '저는 반려동물이 있어요.', image: '🐕' },
+    { word: 'I like reading.', korean: '저는 독서를 좋아해요.', image: '📚' },
+    { word: 'My hobby is drawing.', korean: '제 취미는 그림 그리기예요.', image: '🎨' },
+    { word: 'I can play piano.', korean: '저는 피아노를 칠 수 있어요.', image: '🎹' },
+    { word: 'I want to be a doctor.', korean: '저는 의사가 되고 싶어요.', image: '👨‍⚕️' },
+    // 감정 (12)
+    { word: 'I am happy.', korean: '나는 행복해요.', image: '😄' },
+    { word: 'I am sad.', korean: '나는 슬퍼요.', image: '😢' },
+    { word: 'I am tired.', korean: '나는 피곤해요.', image: '😴' },
+    { word: 'I am hungry.', korean: '배가 고파요.', image: '🍽️' },
+    { word: 'I am thirsty.', korean: '목이 말라요.', image: '💧' },
+    { word: 'I am excited.', korean: '신나요.', image: '🎉' },
+    { word: 'I am scared.', korean: '무서워요.', image: '😨' },
+    { word: 'I am bored.', korean: '심심해요.', image: '😐' },
+    { word: 'I am angry.', korean: '화가 나요.', image: '😠' },
+    { word: 'I am surprised.', korean: '놀랐어요.', image: '😲' },
+    { word: 'I am worried.', korean: '걱정돼요.', image: '😟' },
+    { word: 'I feel great.', korean: '기분이 좋아요.', image: '😊' },
+    // 질문 (15)
+    { word: 'How are you?', korean: '어떻게 지내요?', image: '😊' },
+    { word: 'What is this?', korean: '이것은 무엇인가요?', image: '🤔' },
+    { word: 'What is your name?', korean: '이름이 뭐예요?', image: '❓' },
+    { word: 'How old are you?', korean: '몇 살이에요?', image: '🎂' },
+    { word: 'Where are you from?', korean: '어디에서 왔어요?', image: '🌍' },
+    { word: 'Where is it?', korean: '그것은 어디에 있어요?', image: '📍' },
+    { word: 'What time is it?', korean: '몇 시예요?', image: '⏰' },
+    { word: 'Do you like it?', korean: '그것을 좋아해요?', image: '❤️' },
+    { word: 'Can you help me?', korean: '도와줄 수 있어요?', image: '🙏' },
+    { word: 'May I come in?', korean: '들어가도 돼요?', image: '🚪' },
+    { word: 'What do you want?', korean: '뭘 원하세요?', image: '🤷' },
+    { word: 'Why are you crying?', korean: '왜 울어요?', image: '😢' },
+    { word: 'When is your birthday?', korean: '생일이 언제예요?', image: '🎂' },
+    { word: 'Who is that?', korean: '저 사람은 누구예요?', image: '👤' },
+    { word: 'How much is it?', korean: '얼마예요?', image: '💰' },
+    // 일상 표현 (20)
+    { word: "Let's play!", korean: '같이 놀자!', image: '🎮' },
+    { word: "Let's go!", korean: '가자!', image: '🏃' },
+    { word: "Let's eat!", korean: '먹자!', image: '🍽️' },
+    { word: 'Wait a minute.', korean: '잠깐만요.', image: '⏳' },
+    { word: 'Come here.', korean: '이리 와요.', image: '👋' },
+    { word: 'Sit down, please.', korean: '앉으세요.', image: '🪑' },
+    { word: 'Stand up, please.', korean: '일어나세요.', image: '🧍' },
+    { word: 'Be quiet, please.', korean: '조용히 해주세요.', image: '🤫' },
+    { word: 'Open the door.', korean: '문을 열어주세요.', image: '🚪' },
+    { word: 'Close the window.', korean: '창문을 닫아주세요.', image: '🪟' },
+    { word: 'Turn on the light.', korean: '불을 켜주세요.', image: '💡' },
+    { word: 'Turn off the TV.', korean: 'TV를 꺼주세요.', image: '📺' },
+    { word: 'Wash your hands.', korean: '손을 씻으세요.', image: '🧼' },
+    { word: 'Brush your teeth.', korean: '이를 닦으세요.', image: '🪥' },
+    { word: 'Go to bed.', korean: '자러 가세요.', image: '🛏️' },
+    { word: 'Wake up!', korean: '일어나세요!', image: '⏰' },
+    { word: 'Be careful!', korean: '조심하세요!', image: '⚠️' },
+    { word: 'Hurry up!', korean: '서둘러요!', image: '🏃' },
+    { word: 'Slow down.', korean: '천천히 해요.', image: '🐌' },
+    { word: 'Try again.', korean: '다시 해봐요.', image: '🔄' },
+    // 좋아하는 것 (10)
+    { word: 'I like apples.', korean: '나는 사과를 좋아해요.', image: '🍎' },
+    { word: 'I like pizza.', korean: '나는 피자를 좋아해요.', image: '🍕' },
+    { word: 'I like cats.', korean: '나는 고양이를 좋아해요.', image: '🐱' },
+    { word: 'I like music.', korean: '나는 음악을 좋아해요.', image: '🎵' },
+    { word: 'I like sports.', korean: '나는 운동을 좋아해요.', image: '⚽' },
+    { word: 'I love my family.', korean: '나는 가족을 사랑해요.', image: '👨‍👩‍👧‍👦' },
+    { word: 'I love you.', korean: '사랑해요.', image: '❤️' },
+    { word: "I don't like spiders.", korean: '나는 거미를 싫어해요.', image: '🕷️' },
+    { word: 'My favorite color is blue.', korean: '제가 좋아하는 색은 파란색이에요.', image: '🔵' },
+    { word: 'My favorite food is chicken.', korean: '제가 좋아하는 음식은 치킨이에요.', image: '🍗' },
+    // 날씨/상황 (8)
+    { word: 'It is sunny today.', korean: '오늘 날씨가 맑아요.', image: '☀️' },
+    { word: 'It is raining.', korean: '비가 와요.', image: '🌧️' },
+    { word: 'It is snowing.', korean: '눈이 와요.', image: '❄️' },
+    { word: 'It is cold.', korean: '추워요.', image: '🥶' },
+    { word: 'It is hot.', korean: '더워요.', image: '🥵' },
+    { word: 'It is windy.', korean: '바람이 불어요.', image: '💨' },
+    { word: 'It is cloudy.', korean: '흐려요.', image: '☁️' },
+    { word: 'The weather is nice.', korean: '날씨가 좋아요.', image: '🌤️' },
+    // 축하/응원 (10)
+    { word: 'Happy birthday!', korean: '생일 축하해요!', image: '🎂' },
+    { word: 'Congratulations!', korean: '축하해요!', image: '🎉' },
+    { word: 'Good job!', korean: '잘했어요!', image: '👏' },
+    { word: 'Good luck!', korean: '행운을 빌어요!', image: '🍀' },
+    { word: 'Have a nice day!', korean: '좋은 하루 보내세요!', image: '😊' },
+    { word: 'Take care!', korean: '조심해요!', image: '👋' },
+    { word: 'Well done!', korean: '잘했어요!', image: '👍' },
+    { word: 'You can do it!', korean: '넌 할 수 있어!', image: '💪' },
+    { word: 'Keep it up!', korean: '계속 힘내요!', image: '🔥' },
+    { word: "Don't give up!", korean: '포기하지 마!', image: '✊' }
+  ]
+};
+
+// ========== 상태 변수 ==========
+let currentScreen = 'mainMenu';
+
+// 수학
+let mathGrade = 1;
+let mathType = 'calc';
+let mathScore = 0;
+let mathCorrect = 0;
+let mathTotal = 0;
+let currentMathAnswer = null;
+
+// 영어
+let englishLevel = 'basic';
+let englishType = 'learn';
+let englishScore = 0;
+let englishCorrect = 0;
+let englishTotal = 0;
+let currentWordIndex = 0;
+let currentEnglishAnswer = '';
+
+// ========== 음성 합성 ==========
+function speak(text, lang = 'en-US') {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.rate = 0.8;
+    utterance.pitch = 1.1;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+// ========== 화면 전환 ==========
+function showScreen(screenId) {
+  document.querySelectorAll('.main-menu, .game-screen').forEach(el => {
+    el.style.display = 'none';
+    el.classList.remove('active');
+  });
+  const screen = document.getElementById(screenId);
+  screen.style.display = screenId === 'mainMenu' ? 'flex' : 'block';
+  screen.classList.add('active');
+  currentScreen = screenId;
+}
+
+function goHome() {
+  document.getElementById('resultScreen').classList.remove('active');
+  showScreen('mainMenu');
+}
+
+// ========== 수학 게임 ==========
+function startMath() {
+  showScreen('mathGame');
+  mathScore = 0;
+  mathCorrect = 0;
+  mathTotal = 0;
+  updateMathScore();
+  generateMathQuestion();
+}
+
+function setMathGrade(grade) {
+  mathGrade = grade;
+  document.querySelectorAll('#gradeSelector .selector-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i + 1 === grade);
+  });
+  mathTotal = 0;
+  mathCorrect = 0;
+  updateProgress('mathProgress', 0, 10);
+  generateMathQuestion();
+}
+
+function setMathType(type) {
+  mathType = type;
+  const types = ['calc', 'count', 'compare', 'blank'];
+  document.querySelectorAll('#mathTypeSelector .selector-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', types[i] === type);
+  });
+  mathTotal = 0;
+  mathCorrect = 0;
+  updateProgress('mathProgress', 0, 10);
+  generateMathQuestion();
+}
+
+function generateMathQuestion() {
+  const content = document.getElementById('mathContent');
+
+  if (mathType === 'calc') {
+    generateCalcQuestion(content);
+  } else if (mathType === 'count') {
+    generateCountQuestion(content);
+  } else if (mathType === 'compare') {
+    generateCompareQuestion(content);
+  } else if (mathType === 'blank') {
+    generateBlankQuestion(content);
+  }
+}
+
+function generateCalcQuestion(content) {
+  let num1, num2, operator, answer;
+
+  if (mathGrade === 1) {
+    num1 = Math.floor(Math.random() * 10) + 1;
+    num2 = Math.floor(Math.random() * 10) + 1;
+    if (Math.random() > 0.5) {
+      operator = '+';
+      answer = num1 + num2;
+    } else {
+      if (num1 < num2) [num1, num2] = [num2, num1];
+      operator = '-';
+      answer = num1 - num2;
+    }
+  } else if (mathGrade === 2) {
+    const type = Math.random();
+    if (type < 0.4) {
+      num1 = Math.floor(Math.random() * 50) + 10;
+      num2 = Math.floor(Math.random() * 30) + 1;
+      operator = '+';
+      answer = num1 + num2;
+    } else if (type < 0.7) {
+      num1 = Math.floor(Math.random() * 50) + 30;
+      num2 = Math.floor(Math.random() * 30) + 1;
+      operator = '-';
+      answer = num1 - num2;
+    } else {
+      num1 = Math.floor(Math.random() * 9) + 1;
+      num2 = Math.floor(Math.random() * 9) + 1;
+      operator = '×';
+      answer = num1 * num2;
+    }
+  } else {
+    const type = Math.random();
+    if (type < 0.35) {
+      num1 = Math.floor(Math.random() * 12) + 1;
+      num2 = Math.floor(Math.random() * 12) + 1;
+      operator = '×';
+      answer = num1 * num2;
+    } else if (type < 0.7) {
+      num2 = Math.floor(Math.random() * 9) + 1;
+      answer = Math.floor(Math.random() * 9) + 1;
+      num1 = num2 * answer;
+      operator = '÷';
+    } else {
+      num1 = Math.floor(Math.random() * 100) + 50;
+      num2 = Math.floor(Math.random() * 50) + 1;
+      operator = Math.random() > 0.5 ? '+' : '-';
+      if (operator === '-' && num1 < num2) [num1, num2] = [num2, num1];
+      answer = operator === '+' ? num1 + num2 : num1 - num2;
+    }
+  }
+
+  currentMathAnswer = answer;
+  const options = generateOptions(answer, mathGrade === 1 ? 10 : 20);
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="question-text">${num1} ${operator} ${num2} = ?</div>
+    </div>
+    <div class="answers-grid">
+      ${options.map(opt => `<button class="answer-btn" onclick="checkMathAnswer(${opt}, this)">${opt}</button>`).join('')}
+    </div>
+  `;
+}
+
+function generateCountQuestion(content) {
+  const emojis = ['🍎', '⭐', '🌸', '🎈', '🐟', '🍪', '💎', '🎁'];
+  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+
+  let maxCount = mathGrade === 1 ? 10 : mathGrade === 2 ? 20 : 30;
+  const count = Math.floor(Math.random() * maxCount) + 1;
+
+  currentMathAnswer = count;
+  const options = generateOptions(count, 5);
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="question-sub">몇 개일까요?</div>
+      <div class="visual-objects">${emoji.repeat(count)}</div>
+    </div>
+    <div class="answers-grid">
+      ${options.map(opt => `<button class="answer-btn" onclick="checkMathAnswer(${opt}, this)">${opt}</button>`).join('')}
+    </div>
+  `;
+}
+
+function generateCompareQuestion(content) {
+  let max = mathGrade === 1 ? 20 : mathGrade === 2 ? 100 : 1000;
+  let num1 = Math.floor(Math.random() * max) + 1;
+  let num2 = Math.floor(Math.random() * max) + 1;
+
+  // 같은 수가 나오지 않게
+  while (num1 === num2) {
+    num2 = Math.floor(Math.random() * max) + 1;
+  }
+
+  currentMathAnswer = num1 > num2 ? '>' : '<';
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="question-sub">어느 쪽이 더 클까요?</div>
+      <div class="compare-area">
+        <span class="compare-num">${num1}</span>
+        <div class="compare-btns">
+          <button class="compare-btn" onclick="checkCompare('>', this)">＞</button>
+          <button class="compare-btn" onclick="checkCompare('<', this)">＜</button>
+        </div>
+        <span class="compare-num">${num2}</span>
+      </div>
+    </div>
+  `;
+}
+
+function generateBlankQuestion(content) {
+  let num1, num2, answer, operator, blank;
+
+  if (mathGrade === 1) {
+    num1 = Math.floor(Math.random() * 10) + 1;
+    num2 = Math.floor(Math.random() * 10) + 1;
+    operator = Math.random() > 0.5 ? '+' : '-';
+    if (operator === '-' && num1 < num2) [num1, num2] = [num2, num1];
+    answer = operator === '+' ? num1 + num2 : num1 - num2;
+  } else {
+    num1 = Math.floor(Math.random() * 9) + 1;
+    num2 = Math.floor(Math.random() * 9) + 1;
+    operator = '×';
+    answer = num1 * num2;
+  }
+
+  // 빈칸 위치 결정 (첫번째, 두번째, 결과 중 하나)
+  const blankPos = Math.floor(Math.random() * 3);
+  let question, correctAnswer;
+
+  if (blankPos === 0) {
+    question = `? ${operator} ${num2} = ${answer}`;
+    correctAnswer = num1;
+  } else if (blankPos === 1) {
+    question = `${num1} ${operator} ? = ${answer}`;
+    correctAnswer = num2;
+  } else {
+    question = `${num1} ${operator} ${num2} = ?`;
+    correctAnswer = answer;
+  }
+
+  currentMathAnswer = correctAnswer;
+  const options = generateOptions(correctAnswer, mathGrade === 1 ? 5 : 10);
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="question-sub">빈칸에 알맞은 수는?</div>
+      <div class="question-text">${question}</div>
+    </div>
+    <div class="answers-grid">
+      ${options.map(opt => `<button class="answer-btn" onclick="checkMathAnswer(${opt}, this)">${opt}</button>`).join('')}
+    </div>
+  `;
+}
+
+function generateOptions(correct, range) {
+  const options = new Set([correct]);
+  while (options.size < 4) {
+    let wrong = correct + Math.floor(Math.random() * range * 2) - range;
+    if (wrong < 0) wrong = Math.abs(wrong);
+    if (wrong !== correct) options.add(wrong);
+  }
+  return Array.from(options).sort(() => Math.random() - 0.5);
+}
+
+function checkMathAnswer(selected, btn) {
+  mathTotal++;
+  const correct = selected === currentMathAnswer;
+
+  if (correct) {
+    mathCorrect++;
+    mathScore += 10;
+    btn.classList.add('correct');
+    showFeedback('🎉');
+    speak('Great!');
+  } else {
+    btn.classList.add('wrong');
+    showFeedback('😅');
+    document.querySelectorAll('.answer-btn').forEach(b => {
+      if (parseInt(b.textContent) === currentMathAnswer) b.classList.add('correct');
+    });
+  }
+
+  updateMathScore();
+  updateProgress('mathProgress', mathTotal, 10);
+
+  if (mathTotal >= 10) {
+    setTimeout(() => showResult('math'), 1000);
+  } else {
+    setTimeout(generateMathQuestion, 1000);
+  }
+}
+
+function checkCompare(selected, btn) {
+  mathTotal++;
+  const correct = selected === currentMathAnswer;
+
+  if (correct) {
+    mathCorrect++;
+    mathScore += 10;
+    btn.style.background = '#90EE90';
+    showFeedback('🎉');
+    speak('Correct!');
+  } else {
+    btn.style.background = '#FFB6C1';
+    showFeedback('😅');
+  }
+
+  updateMathScore();
+  updateProgress('mathProgress', mathTotal, 10);
+
+  if (mathTotal >= 10) {
+    setTimeout(() => showResult('math'), 1000);
+  } else {
+    setTimeout(generateMathQuestion, 1000);
+  }
+}
+
+function updateMathScore() {
+  document.getElementById('mathScore').textContent = mathScore;
+}
+
+// ========== 영어 게임 ==========
+function startEnglish() {
+  showScreen('englishGame');
+  englishScore = 0;
+  englishCorrect = 0;
+  englishTotal = 0;
+  currentWordIndex = 0;
+  updateEnglishScore();
+  generateEnglishContent();
+}
+
+function setEnglishLevel(level) {
+  englishLevel = level;
+  currentWordIndex = 0;
+  const levels = ['basic', 'intermediate', 'sentences'];
+  document.querySelectorAll('#levelSelector .selector-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', levels[i] === level);
+  });
+  englishTotal = 0;
+  englishCorrect = 0;
+  updateProgress('englishProgress', 0, 10);
+  generateEnglishContent();
+}
+
+function setEnglishType(type) {
+  englishType = type;
+  const types = ['learn', 'quiz', 'listen', 'spell'];
+  document.querySelectorAll('#engTypeSelector .selector-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', types[i] === type);
+  });
+  englishTotal = 0;
+  englishCorrect = 0;
+  updateProgress('englishProgress', 0, 10);
+  generateEnglishContent();
+}
+
+function generateEnglishContent() {
+  const content = document.getElementById('englishContent');
+
+  if (englishType === 'learn') {
+    generateLearnContent(content);
+  } else if (englishType === 'quiz') {
+    generateQuizContent(content);
+  } else if (englishType === 'listen') {
+    generateListenContent(content);
+  } else if (englishType === 'spell') {
+    generateSpellContent(content);
+  }
+}
+
+function generateLearnContent(content) {
+  const words = englishData[englishLevel];
+  const word = words[currentWordIndex];
+
+  content.innerHTML = `
+    <div class="learn-card">
+      <div class="word-image">${word.image}</div>
+      <div class="word-english">${word.word}</div>
+      <div class="word-korean">${word.korean}</div>
+      <button class="speak-btn" onclick="speak('${word.word.replace(/'/g, "\\'")}')">🔊</button>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="prevWord()">⬅️</button>
+      <button class="nav-btn" onclick="nextWord()">➡️</button>
+    </div>
+  `;
+
+  updateProgress('englishProgress', currentWordIndex + 1, words.length);
+  speak(word.word);
+}
+
+function nextWord() {
+  const words = englishData[englishLevel];
+  currentWordIndex = (currentWordIndex + 1) % words.length;
+  generateLearnContent(document.getElementById('englishContent'));
+}
+
+function prevWord() {
+  const words = englishData[englishLevel];
+  currentWordIndex = (currentWordIndex - 1 + words.length) % words.length;
+  generateLearnContent(document.getElementById('englishContent'));
+}
+
+function generateQuizContent(content) {
+  const words = englishData[englishLevel];
+  const correctWord = words[Math.floor(Math.random() * words.length)];
+  currentEnglishAnswer = correctWord.korean;
+
+  const options = new Set([correctWord.korean]);
+  while (options.size < 4) {
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    options.add(randomWord.korean);
+  }
+
+  const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="question-text" style="font-size:2em;color:#4169E1;">${correctWord.word}</div>
+      <div class="question-sub">이 단어의 뜻은?</div>
+    </div>
+    <div class="answers-grid">
+      ${shuffled.map(opt => `<button class="answer-btn" style="font-size:1.2em;" onclick="checkEnglishAnswer('${opt}', this)">${opt}</button>`).join('')}
+    </div>
+  `;
+
+  speak(correctWord.word);
+}
+
+function generateListenContent(content) {
+  const words = englishData[englishLevel];
+  const correctWord = words[Math.floor(Math.random() * words.length)];
+  currentEnglishAnswer = correctWord.word;
+
+  const options = new Set([correctWord.word]);
+  while (options.size < 4) {
+    const randomWord = words[Math.floor(Math.random() * words.length)];
+    options.add(randomWord.word);
+  }
+
+  const shuffled = Array.from(options).sort(() => Math.random() - 0.5);
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="question-sub">듣고 맞는 단어를 고르세요</div>
+      <button class="speak-btn" onclick="speak('${correctWord.word.replace(/'/g, "\\'")}')">🔊</button>
+    </div>
+    <div class="answers-grid">
+      ${shuffled.map(opt => `<button class="answer-btn" style="font-size:1.1em;" onclick="checkListenAnswer('${opt.replace(/'/g, "\\'")}', this)">${opt}</button>`).join('')}
+    </div>
+  `;
+
+  setTimeout(() => speak(correctWord.word), 500);
+}
+
+function generateSpellContent(content) {
+  const words = englishData[englishLevel].filter(w => w.word.length <= 8 && !w.word.includes(' '));
+  if (words.length === 0) {
+    generateQuizContent(content);
+    return;
+  }
+
+  const correctWord = words[Math.floor(Math.random() * words.length)];
+  currentEnglishAnswer = correctWord.word.toUpperCase();
+
+  const letters = correctWord.word.split('');
+
+  content.innerHTML = `
+    <div class="question-card">
+      <div class="word-image">${correctWord.image}</div>
+      <div class="question-sub">${correctWord.korean}</div>
+      <button class="speak-btn" onclick="speak('${correctWord.word}')" style="margin-bottom:15px;">🔊</button>
+      <div class="spelling-area">
+        ${letters.map((_, i) => `<input type="text" class="letter-box" maxlength="1" data-index="${i}" onkeyup="handleSpellInput(event, ${i})">`).join('')}
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button class="submit-btn" onclick="checkSpelling()">확인</button>
+    </div>
+  `;
+
+  setTimeout(() => {
+    speak(correctWord.word);
+    document.querySelector('.letter-box').focus();
+  }, 300);
+}
+
+function handleSpellInput(event, index) {
+  const inputs = document.querySelectorAll('.letter-box');
+  if (event.key === 'Backspace' && index > 0 && !inputs[index].value) {
+    inputs[index - 1].focus();
+  } else if (inputs[index].value && index < inputs.length - 1) {
+    inputs[index + 1].focus();
+  } else if (event.key === 'Enter') {
+    checkSpelling();
+  }
+}
+
+function checkSpelling() {
+  const inputs = document.querySelectorAll('.letter-box');
+  let userAnswer = '';
+  inputs.forEach(input => userAnswer += input.value);
+  userAnswer = userAnswer.toUpperCase();
+
+  englishTotal++;
+  const correct = userAnswer === currentEnglishAnswer;
+
+  inputs.forEach((input, i) => {
+    if (input.value.toUpperCase() === currentEnglishAnswer[i]) {
+      input.classList.add('correct');
+    } else {
+      input.classList.add('wrong');
+    }
+  });
+
+  if (correct) {
+    englishCorrect++;
+    englishScore += 10;
+    showFeedback('🎉');
+    speak('Perfect!');
+  } else {
+    showFeedback('😅');
+  }
+
+  updateEnglishScore();
+  updateProgress('englishProgress', englishTotal, 10);
+
+  if (englishTotal >= 10) {
+    setTimeout(() => showResult('english'), 1500);
+  } else {
+    setTimeout(generateEnglishContent, 1500);
+  }
+}
+
+function checkEnglishAnswer(selected, btn) {
+  englishTotal++;
+  const correct = selected === currentEnglishAnswer;
+
+  if (correct) {
+    englishCorrect++;
+    englishScore += 10;
+    btn.classList.add('correct');
+    showFeedback('🎉');
+    speak('Excellent!');
+  } else {
+    btn.classList.add('wrong');
+    showFeedback('😅');
+    document.querySelectorAll('.answer-btn').forEach(b => {
+      if (b.textContent === currentEnglishAnswer) b.classList.add('correct');
+    });
+  }
+
+  updateEnglishScore();
+  updateProgress('englishProgress', englishTotal, 10);
+
+  if (englishTotal >= 10) {
+    setTimeout(() => showResult('english'), 1000);
+  } else {
+    setTimeout(generateEnglishContent, 1000);
+  }
+}
+
+function checkListenAnswer(selected, btn) {
+  englishTotal++;
+  const correct = selected === currentEnglishAnswer;
+
+  if (correct) {
+    englishCorrect++;
+    englishScore += 10;
+    btn.classList.add('correct');
+    showFeedback('🎉');
+    speak('Well done!');
+  } else {
+    btn.classList.add('wrong');
+    showFeedback('😅');
+    document.querySelectorAll('.answer-btn').forEach(b => {
+      if (b.textContent === currentEnglishAnswer) b.classList.add('correct');
+    });
+  }
+
+  updateEnglishScore();
+  updateProgress('englishProgress', englishTotal, 10);
+
+  if (englishTotal >= 10) {
+    setTimeout(() => showResult('english'), 1000);
+  } else {
+    setTimeout(generateEnglishContent, 1000);
+  }
+}
+
+function updateEnglishScore() {
+  document.getElementById('englishScore').textContent = englishScore;
+}
+
+// ========== 공통 함수 ==========
+function updateProgress(id, current, total) {
+  const percent = (current / total) * 100;
+  document.getElementById(id).style.width = `${percent}%`;
+}
+
+function showFeedback(emoji) {
+  const feedback = document.getElementById('feedback');
+  feedback.textContent = emoji;
+  feedback.style.display = 'block';
+  setTimeout(() => feedback.style.display = 'none', 800);
+}
+
+function showResult(type) {
+  const correct = type === 'math' ? mathCorrect : englishCorrect;
+  const percent = (correct / 10) * 100;
+
+  let emoji, title;
+  if (percent >= 90) { emoji = '🏆'; title = '최고예요!'; }
+  else if (percent >= 70) { emoji = '🎉'; title = '잘했어요!'; }
+  else if (percent >= 50) { emoji = '😊'; title = '좋아요!'; }
+  else { emoji = '💪'; title = '다시 도전!'; }
+
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultScore').textContent = `${correct}/10`;
+  document.getElementById('resultScreen').classList.add('active');
+
+  if (percent >= 70) speak('Congratulations!');
+}
+
+function continueGame() {
+  document.getElementById('resultScreen').classList.remove('active');
+
+  if (currentScreen === 'mathGame') {
+    mathTotal = 0;
+    mathCorrect = 0;
+    updateProgress('mathProgress', 0, 10);
+    generateMathQuestion();
+  } else {
+    englishTotal = 0;
+    englishCorrect = 0;
+    updateProgress('englishProgress', 0, 10);
+    generateEnglishContent();
+  }
+}
+
+// 초기화
+document.addEventListener('DOMContentLoaded', () => showScreen('mainMenu'));
+</script>
+</body>
+</html>

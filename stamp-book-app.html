@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>전국 스탬프북 - 161개 시·군 완전정복</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #4ade80);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        /* Tabs */
+        .tab-container {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Search */
+        .search-container {
+            padding: 15px 20px;
+            background: white;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Content */
+        .content {
+            padding: 15px;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin: 20px 0 10px;
+            padding-left: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .subsection-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin: 15px 0 8px;
+            padding-left: 8px;
+        }
+
+        /* Stamp Grid */
+        .stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stamp-item {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .stamp-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stamp-item.stamped {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border-color: var(--success);
+        }
+
+        .stamp-item .stamp-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stamp-item .stamp-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            word-break: keep-all;
+        }
+
+        .stamp-item .stamp-date {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            margin-top: 3px;
+        }
+
+        .stamp-item .stamp-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--success);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        /* Theme Cards */
+        .theme-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .theme-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .theme-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .theme-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .theme-card-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .theme-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .theme-progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .theme-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .theme-progress-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        /* Theme List Items */
+        .theme-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .theme-list-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-list-item:hover {
+            background: #e2e8f0;
+        }
+
+        .theme-list-item.stamped {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        }
+
+        .theme-list-item .item-icon {
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        .theme-list-item .item-content {
+            flex: 1;
+        }
+
+        .theme-list-item .item-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .theme-list-item .item-desc {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .theme-list-item .item-check {
+            color: var(--success);
+            font-size: 1.2rem;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.3s;
+        }
+
+        .nav-btn.active {
+            color: var(--primary);
+        }
+
+        .nav-btn .nav-icon {
+            font-size: 1.5rem;
+        }
+
+        .nav-btn .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .modal-btn.danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Statistics Page */
+        .stats-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Region Colors */
+        .region-seoul { --region-color: #ef4444; }
+        .region-gyeonggi { --region-color: #f97316; }
+        .region-incheon { --region-color: #eab308; }
+        .region-gangwon { --region-color: #22c55e; }
+        .region-chungcheong { --region-color: #14b8a6; }
+        .region-jeolla { --region-color: #3b82f6; }
+        .region-gyeongsang { --region-color: #8b5cf6; }
+        .region-jeju { --region-color: #ec4899; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            z-index: 300;
+            animation: toastIn 0.3s ease;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 250;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>🗺️ 전국 스탬프북</h1>
+        <p class="subtitle">대한민국 161개 시·군 완전정복</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-stats">
+            <span id="progress-text">0 / 161 지역 방문</span>
+            <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Main Tabs -->
+    <div class="tab-container" id="main-tabs">
+        <button class="tab-btn active" data-tab="region">지역별</button>
+        <button class="tab-btn" data-tab="theme">테마별</button>
+    </div>
+
+    <!-- Region Sub Tabs -->
+    <div class="tab-container" id="region-tabs">
+        <button class="tab-btn active" data-region="all">전체</button>
+        <button class="tab-btn" data-region="seoul">서울</button>
+        <button class="tab-btn" data-region="gyeonggi">경기</button>
+        <button class="tab-btn" data-region="incheon">인천</button>
+        <button class="tab-btn" data-region="gangwon">강원</button>
+        <button class="tab-btn" data-region="chungcheong">충청</button>
+        <button class="tab-btn" data-region="jeolla">전라</button>
+        <button class="tab-btn" data-region="gyeongsang">경상</button>
+        <button class="tab-btn" data-region="jeju">제주</button>
+    </div>
+
+    <!-- Theme Sub Tabs -->
+    <div class="tab-container hidden" id="theme-tabs">
+        <button class="tab-btn active" data-theme="all">전체</button>
+        <button class="tab-btn" data-theme="history">역사</button>
+        <button class="tab-btn" data-theme="food">미식</button>
+        <button class="tab-btn" data-theme="nature">자연</button>
+        <button class="tab-btn" data-theme="special">특수</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-container">
+        <input type="text" class="search-input" id="search-input" placeholder="🔍 지역 또는 장소 검색...">
+    </div>
+
+    <!-- Content -->
+    <main class="content" id="content">
+        <!-- Dynamic content will be loaded here -->
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-page="home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">홈</span>
+        </button>
+        <button class="nav-btn" data-page="map">
+            <span class="nav-icon">🗺️</span>
+            <span class="nav-label">지도</span>
+        </button>
+        <button class="nav-btn" data-page="stats">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">통계</span>
+        </button>
+        <button class="nav-btn" data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">설정</span>
+        </button>
+    </nav>
+
+    <!-- Stamp Modal -->
+    <div class="modal" id="stamp-modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modal-icon">🎉</div>
+            <h3 class="modal-title" id="modal-title">스탬프 찍기</h3>
+            <p class="modal-text" id="modal-text">이 장소에 방문하셨나요?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" id="modal-cancel">취소</button>
+                <button class="modal-btn primary" id="modal-confirm">스탬프 찍기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal" id="delete-modal">
+        <div class="modal-content">
+            <div class="modal-icon">🗑️</div>
+            <h3 class="modal-title">스탬프 취소</h3>
+            <p class="modal-text" id="delete-modal-text">스탬프를 취소하시겠습니까?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" id="delete-cancel">아니오</button>
+                <button class="modal-btn danger" id="delete-confirm">취소하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 데이터 정의 ====================
+
+        // 지역별 데이터 (161개 시·군·구)
+        const regionData = {
+            seoul: {
+                name: '서울특별시',
+                icon: '🏙️',
+                color: '#ef4444',
+                areas: [
+                    '종로구', '중구', '용산구', '성동구', '광진구', '동대문구', '중랑구',
+                    '성북구', '강북구', '도봉구', '노원구', '은평구', '서대문구', '마포구',
+                    '양천구', '강서구', '구로구', '금천구', '영등포구', '동작구', '관악구',
+                    '서초구', '강남구', '송파구', '강동구'
+                ]
+            },
+            gyeonggi: {
+                name: '경기도',
+                icon: '🌆',
+                color: '#f97316',
+                areas: [
+                    '수원', '고양', '용인', '성남', '부천', '화성', '안산', '남양주',
+                    '안양', '평택', '시흥', '파주', '의정부', '김포', '광주', '광명',
+                    '군포', '하남', '오산', '양주', '이천', '구리', '안성', '포천',
+                    '의왕', '양평', '여주', '동두천', '가평', '과천', '연천'
+                ]
+            },
+            incheon: {
+                name: '인천광역시',
+                icon: '✈️',
+                color: '#eab308',
+                areas: [
+                    '중구', '동구', '미추홀구', '연수구', '남동구', '부평구',
+                    '계양구', '서구', '강화군', '옹진군'
+                ]
+            },
+            gangwon: {
+                name: '강원특별자치도',
+                icon: '⛰️',
+                color: '#22c55e',
+                areas: [
+                    '춘천', '원주', '강릉', '동해', '태백', '속초', '삼척',
+                    '홍천', '횡성', '영월', '평창', '정선', '철원', '화천',
+                    '양구', '인제', '고성', '양양'
+                ]
+            },
+            chungcheong: {
+                name: '충청권',
+                icon: '🏛️',
+                color: '#14b8a6',
+                subRegions: {
+                    '대전광역시': ['대전'],
+                    '세종특별자치시': ['세종'],
+                    '충청남도': ['천안', '공주', '보령', '아산', '서산', '논산', '계룡', '당진', '금산', '부여', '서천', '청양', '홍성', '예산', '태안'],
+                    '충청북도': ['청주', '충주', '제천', '보은', '옥천', '영동', '증평', '진천', '괴산', '음성', '단양']
+                }
+            },
+            jeolla: {
+                name: '전라권',
+                icon: '🌾',
+                color: '#3b82f6',
+                subRegions: {
+                    '광주광역시': ['광주'],
+                    '전북특별자치도': ['전주', '군산', '익산', '정읍', '남원', '김제', '완주', '진안', '무주', '장수', '임실', '순창', '고창', '부안'],
+                    '전라남도': ['목포', '여수', '순천', '나주', '광양', '담양', '곡성', '구례', '고흥', '보성', '화순', '장흥', '강진', '해남', '영암', '무안', '함평', '영광', '장성', '완도', '진도', '신안']
+                }
+            },
+            gyeongsang: {
+                name: '경상권',
+                icon: '🏔️',
+                color: '#8b5cf6',
+                subRegions: {
+                    '부산광역시': ['부산'],
+                    '대구광역시': ['대구'],
+                    '울산광역시': ['울산'],
+                    '경상북도': ['포항', '경주', '김천', '안동', '구미', '영주', '영천', '상주', '문경', '경산', '의성', '청송', '영양', '영덕', '청도', '고령', '성주', '칠곡', '예천', '봉화', '울진', '울릉'],
+                    '경상남도': ['창원', '진주', '통영', '사천', '김해', '밀양', '거제', '양산', '의령', '함안', '창녕', '고성', '남해', '하동', '산청', '함양', '거창', '합천']
+                }
+            },
+            jeju: {
+                name: '제주특별자치도',
+                icon: '🏝️',
+                color: '#ec4899',
+                areas: ['제주', '서귀포']
+            }
+        };
+
+        // 테마별 데이터 (상세 리스트업)
+        const themeData = {
+            history: {
+                name: '역사 여행',
+                icon: '🏛️',
+                color: '#b45309',
+                categories: {
+                    '삼국시대 - 고구려': [
+                        { name: '구리', desc: '아차산성, 고구려대장간마을, 고구려역사공원' },
+                        { name: '서울 광진구', desc: '아차산 고구려유적, 워커힐 고구려정' }
+                    ],
+                    '삼국시대 - 백제': [
+                        { name: '공주', desc: '공산성, 무령왕릉, 송산리고분군, 국립공주박물관' },
+                        { name: '부여', desc: '정림사지, 부소산성, 낙화암, 궁남지, 국립부여박물관' },
+                        { name: '익산', desc: '미륵사지, 왕궁리유적, 쌍릉, 익산토성' },
+                        { name: '서울 송파구', desc: '풍납토성, 몽촌토성, 한성백제박물관' },
+                        { name: '서천', desc: '한산모시마을, 비인성지' }
+                    ],
+                    '삼국시대 - 신라': [
+                        { name: '경주', desc: '불국사, 석굴암, 첨성대, 대릉원, 안압지(동궁과월지), 국립경주박물관' },
+                        { name: '울산', desc: '울주 대곡리 반구대암각화, 천전리각석' },
+                        { name: '영주', desc: '부석사, 소수서원' },
+                        { name: '청도', desc: '운문사, 청도읍성' }
+                    ],
+                    '가야': [
+                        { name: '김해', desc: '대성동고분군, 국립김해박물관, 수로왕릉, 봉황동유적' },
+                        { name: '고령', desc: '대가야박물관, 지산동고분군, 대가야왕릉전시관' },
+                        { name: '합천', desc: '옥전고분군, 합천박물관' },
+                        { name: '함안', desc: '말이산고분군, 함안박물관' },
+                        { name: '창녕', desc: '교동고분군, 창녕박물관' },
+                        { name: '성주', desc: '성산동고분군, 성주역사박물관' }
+                    ],
+                    '고려시대': [
+                        { name: '개성(참고)', desc: '만월대, 선죽교 (북측지역)' },
+                        { name: '강화', desc: '강화산성, 고려궁지, 강화역사박물관' },
+                        { name: '안동', desc: '봉정사, 하회마을' },
+                        { name: '영주', desc: '부석사' }
+                    ],
+                    '조선시대': [
+                        { name: '서울 종로구', desc: '경복궁, 창덕궁, 종묘, 북촌한옥마을' },
+                        { name: '서울 중구', desc: '덕수궁, 남산골한옥마을' },
+                        { name: '수원', desc: '수원화성, 화성행궁' },
+                        { name: '안동', desc: '하회마을, 도산서원, 병산서원' },
+                        { name: '경주', desc: '양동마을, 옥산서원' },
+                        { name: '전주', desc: '전주한옥마을, 경기전, 오목대' },
+                        { name: '담양', desc: '소쇄원, 명옥헌원림' },
+                        { name: '논산', desc: '돈암서원, 명재고택' }
+                    ],
+                    '근대 문화유산': [
+                        { name: '군산', desc: '근대역사박물관, 히로쓰가옥, 동국사, 군산세관' },
+                        { name: '목포', desc: '근대역사관, 구 동양척식주식회사, 유달산' },
+                        { name: '부산', desc: '감천문화마을, 40계단, 초량이바구길' },
+                        { name: '인천', desc: '개항장거리, 차이나타운, 자유공원' },
+                        { name: '대구', desc: '근대골목, 계산성당, 약전골목' },
+                        { name: '전주', desc: '전동성당, 풍남문' },
+                        { name: '포항', desc: '구룡포 근대문화역사거리, 일본인가옥거리' }
+                    ],
+                    '독립운동 유적지': [
+                        { name: '천안', desc: '독립기념관, 유관순열사기념관' },
+                        { name: '서울 서대문구', desc: '서대문형무소역사관' },
+                        { name: '안성', desc: '3.1운동기념관' },
+                        { name: '제암리(화성)', desc: '제암리3.1운동순국기념관' }
+                    ]
+                }
+            },
+            food: {
+                name: '미식 여행',
+                icon: '🍜',
+                color: '#dc2626',
+                categories: {
+                    '전국 팔도 대표 음식': [
+                        { name: '춘천', desc: '닭갈비, 막국수' },
+                        { name: '속초', desc: '아바이순대, 오징어순대, 생선구이' },
+                        { name: '강릉', desc: '초당두부, 짬뽕순두부' },
+                        { name: '전주', desc: '비빔밥, 콩나물국밥, 한정식' },
+                        { name: '안동', desc: '찜닭, 헛제사밥, 간고등어' },
+                        { name: '포항', desc: '물회, 과메기' },
+                        { name: '대구', desc: '막창, 납작만두, 동인동 찜갈비' },
+                        { name: '부산', desc: '밀면, 돼지국밥, 씨앗호떡' },
+                        { name: '통영', desc: '충무김밥, 굴구이, 꿀빵' },
+                        { name: '여수', desc: '갓김치, 서대회무침, 게장백반' },
+                        { name: '순천', desc: '꼬막정식, 대대포 장어' },
+                        { name: '목포', desc: '세발낙지, 홍어삼합, 꽃게장' },
+                        { name: '광주', desc: '송정떡갈비, 오리탕, 육전' },
+                        { name: '대전', desc: '칼국수, 두부두루치기' },
+                        { name: '공주', desc: '공주밤막걸리, 밤국수' },
+                        { name: '수원', desc: '왕갈비, 순대국' },
+                        { name: '인천', desc: '짜장면(차이나타운), 쫄면' },
+                        { name: '제주', desc: '흑돼지, 옥돔구이, 고기국수' },
+                        { name: '성남', desc: '모란시장 순대국' },
+                        { name: '의정부', desc: '부대찌개' }
+                    ],
+                    '대동빵지도 (전국 유명 빵집)': [
+                        { name: '대전', desc: '성심당 - 튀김소보로, 망고시루, 부추빵' },
+                        { name: '군산', desc: '이성당 - 야채빵, 단팥빵 (1945년 개업)' },
+                        { name: '대구', desc: '삼송빵집 - 마약빵, 삼송크림빵' },
+                        { name: '안동', desc: '맘모스베이커리 - 크림치즈빵, 찹쌀도넛' },
+                        { name: '전주', desc: '풍년제과 - 초코파이, 수제파이' },
+                        { name: '통영', desc: '오미사꿀빵 - 통영꿀빵' },
+                        { name: '경주', desc: '황남빵 - 경주빵' },
+                        { name: '서울 종로구', desc: '태극당 - 모나카, 야채샐러드빵' },
+                        { name: '서울 중구', desc: '나폴레옹제과점 - 나폴레옹파이' },
+                        { name: '속초', desc: '봉포머구리집 앞 - 오징어순대빵' },
+                        { name: '부산', desc: '옵스 - 씨앗호떡, 비엠크림빵' },
+                        { name: '공주', desc: '계룡산도예원 - 공주알밤빵' },
+                        { name: '청주', desc: '성안길 튀김소보로' },
+                        { name: '광주', desc: '궁전제과 - 공룡알빵' },
+                        { name: '목포', desc: '코롬방제과 - 새우빵' }
+                    ],
+                    '전국 유명 카페 거리': [
+                        { name: '강릉', desc: '강릉 커피거리 (안목해변), 테라로사, 보헤미안' },
+                        { name: '제주', desc: '감성카페 (애월 카페거리, 협재, 함덕)' },
+                        { name: '양양', desc: '서피비치 카페촌, 죽도해변' },
+                        { name: '부산', desc: '해운대 달맞이길, 전포카페거리' },
+                        { name: '서울 성동구', desc: '성수동 카페거리' },
+                        { name: '서울 마포구', desc: '연남동, 망원동 카페거리' },
+                        { name: '서울 용산구', desc: '경리단길, 해방촌' },
+                        { name: '대구', desc: '동성로 카페거리, 앞산 카페촌' },
+                        { name: '전주', desc: '한옥마을 카페거리' },
+                        { name: '여수', desc: '여수 낭만포차거리 카페촌' },
+                        { name: '경주', desc: '황리단길 카페거리' },
+                        { name: '삼척', desc: '장호항 카페거리' }
+                    ],
+                    '전통시장 먹거리': [
+                        { name: '서울 종로구', desc: '광장시장 - 마약김밥, 빈대떡, 육회' },
+                        { name: '서울 중구', desc: '남대문시장 - 손칼국수, 갈치조림' },
+                        { name: '부산', desc: '자갈치시장 - 회, 부산어묵' },
+                        { name: '대구', desc: '서문시장 - 납작만두, 칼국수' },
+                        { name: '전주', desc: '남부시장 - 피순대, 콩나물국밥' },
+                        { name: '청주', desc: '육거리시장 - 순대국밥' },
+                        { name: '속초', desc: '속초관광수산시장 - 만석닭강정' },
+                        { name: '강릉', desc: '중앙시장 - 닭강정, 감자전' },
+                        { name: '제주', desc: '동문시장 - 흑돼지, 오메기떡' },
+                        { name: '목포', desc: '목포종합수산시장 - 민어, 낙지' }
+                    ]
+                }
+            },
+            nature: {
+                name: '자연 및 액티비티',
+                icon: '🏔️',
+                color: '#16a34a',
+                categories: {
+                    '대한민국 100대 명산': [
+                        { name: '설악산 (속초/인제)', desc: '해발 1,708m, 대청봉, 울산바위, 비룡폭포' },
+                        { name: '지리산 (구례/남원/하동)', desc: '해발 1,915m, 천왕봉, 노고단, 뱀사골' },
+                        { name: '한라산 (제주)', desc: '해발 1,947m, 백록담, 영실코스' },
+                        { name: '북한산 (서울/고양)', desc: '해발 836m, 백운대, 인수봉' },
+                        { name: '덕유산 (무주)', desc: '해발 1,614m, 향적봉, 무주리조트' },
+                        { name: '오대산 (평창)', desc: '해발 1,563m, 비로봉, 월정사, 전나무숲' },
+                        { name: '태백산 (태백)', desc: '해발 1,567m, 천제단, 주목군락' },
+                        { name: '소백산 (영주/단양)', desc: '해발 1,439m, 비로봉, 철쭉군락' },
+                        { name: '가야산 (합천/성주)', desc: '해발 1,430m, 상왕봉, 해인사' },
+                        { name: '계룡산 (공주/계룡)', desc: '해발 845m, 천황봉, 동학사, 갑사' },
+                        { name: '월악산 (제천/충주)', desc: '해발 1,097m, 영봉, 덕주사' },
+                        { name: '팔공산 (대구/경산)', desc: '해발 1,193m, 동화사, 갓바위' },
+                        { name: '주왕산 (청송)', desc: '해발 720m, 주왕굴, 용추폭포' },
+                        { name: '월출산 (영암)', desc: '해발 809m, 천황봉, 구름다리' },
+                        { name: '내장산 (정읍)', desc: '해발 763m, 단풍명소, 내장사' },
+                        { name: '무등산 (광주)', desc: '해발 1,187m, 천왕봉, 주상절리' },
+                        { name: '치악산 (원주)', desc: '해발 1,288m, 비로봉, 구룡사' },
+                        { name: '속리산 (보은)', desc: '해발 1,058m, 천왕봉, 법주사' },
+                        { name: '두륜산 (해남)', desc: '해발 703m, 대흥사, 땅끝마을' },
+                        { name: '황매산 (합천/산청)', desc: '해발 1,108m, 철쭉명소' }
+                    ],
+                    '전국 액티비티 명소': [
+                        { name: '단양', desc: '패러글라이딩, 번지점프, 래프팅' },
+                        { name: '통영', desc: '루지, 케이블카, 스카이라인' },
+                        { name: '정선', desc: '짚와이어, 레일바이크, 스카이워크' },
+                        { name: '양양', desc: '서핑, 스카이다이빙' },
+                        { name: '영월', desc: '래프팅, 동강' },
+                        { name: '인제', desc: '번지점프, 래프팅' },
+                        { name: '무주', desc: '스키, 스노보드, 반딧불축제' },
+                        { name: '평창', desc: '스키, 송어축제' },
+                        { name: '여수', desc: '해상케이블카, 낭만포차' },
+                        { name: '거제', desc: '외도, 해금강, 바람의언덕' },
+                        { name: '제주', desc: '스쿠버다이빙, 승마, 카약' },
+                        { name: '강릉', desc: '서핑, 카약, 경포호 자전거' },
+                        { name: '춘천', desc: '물레길 카누, 강촌 레일바이크' },
+                        { name: '남이섬(가평)', desc: '자전거, 짚와이어' },
+                        { name: '포항', desc: '스페이스워크, 해맞이공원' }
+                    ],
+                    '꽃 투어 명소': [
+                        { name: '진해(창원)', desc: '🌸 벚꽃 - 진해군항제 (4월)' },
+                        { name: '구례', desc: '💛 산수유 - 산수유마을 (3월)' },
+                        { name: '광양', desc: '🤍 매화 - 매화마을 (3월)' },
+                        { name: '태안', desc: '🌷 튤립 - 태안튤립축제 (4-5월)' },
+                        { name: '담양', desc: '💜 메밀꽃 - 메밀밭 (9월)' },
+                        { name: '서귀포', desc: '💛 유채꽃 - 제주 유채꽃밭 (3-4월)' },
+                        { name: '삼척', desc: '🧡 해바라기 - 맹방해변 (8월)' },
+                        { name: '정읍', desc: '🍁 단풍 - 내장산 (11월)' },
+                        { name: '고창', desc: '🌺 청보리 - 청보리밭축제 (4-5월)' },
+                        { name: '서산', desc: '🪷 연꽃 - 서산 용비지 (7-8월)' },
+                        { name: '함평', desc: '🌼 국화 - 함평나비대축제 (4-5월)' },
+                        { name: '합천', desc: '💜 라벤더 - 핫들생태공원 (6월)' }
+                    ],
+                    '해안/도서 명소': [
+                        { name: '부산', desc: '해운대, 광안리, 송정해수욕장' },
+                        { name: '강릉', desc: '경포대, 안목해변, 정동진' },
+                        { name: '속초', desc: '영금정, 속초해수욕장' },
+                        { name: '여수', desc: '오동도, 향일암, 돌산대교' },
+                        { name: '통영', desc: '동피랑, 미륵산, 케이블카' },
+                        { name: '거제', desc: '외도, 해금강, 바람의언덕, 학동흑진주해변' },
+                        { name: '제주', desc: '협재, 함덕, 월정리해변' },
+                        { name: '태안', desc: '만리포, 꽃지해변' },
+                        { name: '목포', desc: '유달산, 갓바위, 목포대교' },
+                        { name: '완도', desc: '청산도, 보길도' },
+                        { name: '신안', desc: '퍼플섬, 증도, 천사대교' },
+                        { name: '진도', desc: '쏠비치, 운림산방, 신비의바닷길' },
+                        { name: '울릉', desc: '도동항, 나리분지, 성인봉' }
+                    ]
+                }
+            },
+            special: {
+                name: '특수 테마',
+                icon: '⭐',
+                color: '#7c3aed',
+                categories: {
+                    '한국관광 100선 (주요 선정지)': [
+                        { name: '서울 종로구', desc: '경복궁, 북촌한옥마을, 광화문광장' },
+                        { name: '서울 중구', desc: '명동, N서울타워, 덕수궁' },
+                        { name: '부산', desc: '해운대, 감천문화마을, 광안대교' },
+                        { name: '경주', desc: '불국사, 석굴암, 대릉원' },
+                        { name: '전주', desc: '전주한옥마을, 경기전' },
+                        { name: '강릉', desc: '경포대, 커피거리, 오죽헌' },
+                        { name: '여수', desc: '오동도, 여수밤바다, 해상케이블카' },
+                        { name: '제주', desc: '성산일출봉, 우도, 한라산' },
+                        { name: '인천', desc: '차이나타운, 월미도, 송도센트럴파크' },
+                        { name: '수원', desc: '수원화성' },
+                        { name: '안동', desc: '하회마을, 도산서원' },
+                        { name: '담양', desc: '죽녹원, 메타세쿼이아길' },
+                        { name: '보성', desc: '녹차밭' },
+                        { name: '순천', desc: '순천만습지, 순천만국가정원' },
+                        { name: '통영', desc: '미륵산케이블카, 동피랑' }
+                    ],
+                    '전국 휴게소 맛집': [
+                        { name: '죽암휴게소 (영동고속도로)', desc: '소고기국밥, 우도짜장' },
+                        { name: '덕평휴게소 (중부고속도로)', desc: '간장게장정식, 딸기' },
+                        { name: '통도사휴게소 (경부고속도로)', desc: '산채비빔밥, 호두과자' },
+                        { name: '하행선 주암휴게소 (남해고속도로)', desc: '전복죽, 장어덮밥' },
+                        { name: '화성휴게소 (서해안고속도로)', desc: '짬뽕라면' },
+                        { name: '천안삼거리휴게소 (경부고속도로)', desc: '호두과자' },
+                        { name: '문막휴게소 (영동고속도로)', desc: '감자전, 막국수' },
+                        { name: '대관령휴게소 (영동고속도로)', desc: '황태해장국' },
+                        { name: '여주휴게소 (중부내륙고속도로)', desc: '여주쌀밥' },
+                        { name: '진영휴게소 (남해고속도로)', desc: '단감빵, 불고기정식' }
+                    ],
+                    '드라마/영화 촬영지': [
+                        { name: '문경', desc: '문경새재 (태조 왕건, 정도전)' },
+                        { name: '논산', desc: '선샤인랜드 (사랑의불시착), 관촉사' },
+                        { name: '순천', desc: '순천드라마세트장 (사랑과야망)' },
+                        { name: '부산', desc: '감천문화마을 (이끼), 해운대 (해운대)' },
+                        { name: '제주', desc: '섭지코지 (올인), 성산일출봉 (슬의생)' },
+                        { name: '강릉', desc: '주문진 (도깨비), 안목해변' },
+                        { name: '인천', desc: '을왕리 (파라사이트), 월미도' },
+                        { name: '남이섬(가평)', desc: '겨울연가 촬영지' },
+                        { name: '정선', desc: '아리힐스 (태양의후예)' },
+                        { name: '울산', desc: '간절곶 (밀양)' },
+                        { name: '안동', desc: '하회마을 (미스터선샤인)' },
+                        { name: '영월', desc: '별마로천문대 (라디오스타)' }
+                    ],
+                    '템플스테이 명소': [
+                        { name: '합천', desc: '해인사 - 팔만대장경' },
+                        { name: '양산', desc: '통도사 - 불보사찰' },
+                        { name: '순천', desc: '송광사 - 승보사찰' },
+                        { name: '영주', desc: '부석사 - 무량수전' },
+                        { name: '구례', desc: '화엄사 - 사찰 템플스테이' },
+                        { name: '공주', desc: '마곡사 - 백범 김구 은신처' },
+                        { name: '해남', desc: '대흥사 - 땅끝 마을 인근' },
+                        { name: '보은', desc: '법주사 - 미륵대불' },
+                        { name: '부산', desc: '범어사 - 금정산' },
+                        { name: '남원', desc: '실상사 - 지리산' }
+                    ],
+                    'KTX 역 주변 명소': [
+                        { name: '서울역', desc: '서울로7017, 남산, 명동' },
+                        { name: '용산역', desc: '국립중앙박물관, 이태원' },
+                        { name: '수원역', desc: '수원화성, 화성행궁' },
+                        { name: '대전역', desc: '성심당, 중앙시장' },
+                        { name: '동대구역', desc: '서문시장, 팔공산' },
+                        { name: '부산역', desc: '자갈치시장, 광복동' },
+                        { name: '울산역', desc: '태화강국가정원' },
+                        { name: '경주역', desc: '대릉원, 첨성대' },
+                        { name: '강릉역', desc: '경포대, 안목해변' },
+                        { name: '전주역', desc: '한옥마을, 덕진공원' },
+                        { name: '여수엑스포역', desc: '오동도, 여수밤바다' },
+                        { name: '광주송정역', desc: '송정떡갈비골목' },
+                        { name: '목포역', desc: '유달산, 근대역사관' }
+                    ]
+                }
+            }
+        };
+
+        // ==================== 앱 상태 관리 ====================
+
+        let stamps = JSON.parse(localStorage.getItem('stamps') || '{}');
+        let currentMainTab = 'region';
+        let currentRegion = 'all';
+        let currentTheme = 'all';
+        let currentPage = 'home';
+        let currentStampTarget = null;
+
+        // ==================== 유틸리티 함수 ====================
+
+        function saveStamps() {
+            localStorage.setItem('stamps', JSON.stringify(stamps));
+        }
+
+        function getStampKey(type, category, name) {
+            return `${type}:${category}:${name}`;
+        }
+
+        function isStamped(key) {
+            return stamps[key] !== undefined;
+        }
+
+        function getStampDate(key) {
+            return stamps[key];
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return `${date.getFullYear()}.${(date.getMonth()+1).toString().padStart(2,'0')}.${date.getDate().toString().padStart(2,'0')}`;
+        }
+
+        function getTotalRegionCount() {
+            let count = 0;
+            for (const region of Object.values(regionData)) {
+                if (region.areas) {
+                    count += region.areas.length;
+                } else if (region.subRegions) {
+                    for (const areas of Object.values(region.subRegions)) {
+                        count += areas.length;
+                    }
+                }
+            }
+            return count;
+        }
+
+        function getStampedCount() {
+            let count = 0;
+            for (const key of Object.keys(stamps)) {
+                if (key.startsWith('region:')) {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function updateProgress() {
+            const total = getTotalRegionCount();
+            const stamped = getStampedCount();
+            const percent = Math.round((stamped / total) * 100);
+
+            document.getElementById('progress-text').textContent = `${stamped} / ${total} 지역 방문`;
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            document.getElementById('progress-fill').style.width = `${percent}%`;
+        }
+
+        function showToast(message) {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // ==================== 렌더링 함수 ====================
+
+        function renderRegionContent(regionKey) {
+            const content = document.getElementById('content');
+            let html = '';
+
+            if (regionKey === 'all') {
+                // 전체 지역 표시
+                for (const [key, region] of Object.entries(regionData)) {
+                    html += `<h2 class="section-title">${region.icon} ${region.name}</h2>`;
+
+                    if (region.areas) {
+                        html += '<div class="stamp-grid">';
+                        for (const area of region.areas) {
+                            const stampKey = getStampKey('region', key, area);
+                            const stamped = isStamped(stampKey);
+                            html += `
+                                <div class="stamp-item ${stamped ? 'stamped' : ''}"
+                                     data-type="region" data-category="${key}" data-name="${area}">
+                                    ${stamped ? '<div class="stamp-badge">✓</div>' : ''}
+                                    <div class="stamp-icon">${stamped ? '✅' : '📍'}</div>
+                                    <div class="stamp-name">${area}</div>
+                                    ${stamped ? `<div class="stamp-date">${formatDate(getStampDate(stampKey))}</div>` : ''}
+                                </div>
+                            `;
+                        }
+                        html += '</div>';
+                    } else if (region.subRegions) {
+                        for (const [subName, areas] of Object.entries(region.subRegions)) {
+                            html += `<h3 class="subsection-title">${subName}</h3>`;
+                            html += '<div class="stamp-grid">';
+                            for (const area of areas) {
+                                const stampKey = getStampKey('region', key, area);
+                                const stamped = isStamped(stampKey);
+                                html += `
+                                    <div class="stamp-item ${stamped ? 'stamped' : ''}"
+                                         data-type="region" data-category="${key}" data-name="${area}">
+                                        ${stamped ? '<div class="stamp-badge">✓</div>' : ''}
+                                        <div class="stamp-icon">${stamped ? '✅' : '📍'}</div>
+                                        <div class="stamp-name">${area}</div>
+                                        ${stamped ? `<div class="stamp-date">${formatDate(getStampDate(stampKey))}</div>` : ''}
+                                    </div>
+                                `;
+                            }
+                            html += '</div>';
+                        }
+                    }
+                }
+            } else {
+                // 특정 지역만 표시
+                const region = regionData[regionKey];
+                html += `<h2 class="section-title">${region.icon} ${region.name}</h2>`;
+
+                if (region.areas) {
+                    html += '<div class="stamp-grid">';
+                    for (const area of region.areas) {
+                        const stampKey = getStampKey('region', regionKey, area);
+                        const stamped = isStamped(stampKey);
+                        html += `
+                            <div class="stamp-item ${stamped ? 'stamped' : ''}"
+                                 data-type="region" data-category="${regionKey}" data-name="${area}">
+                                ${stamped ? '<div class="stamp-badge">✓</div>' : ''}
+                                <div class="stamp-icon">${stamped ? '✅' : '📍'}</div>
+                                <div class="stamp-name">${area}</div>
+                                ${stamped ? `<div class="stamp-date">${formatDate(getStampDate(stampKey))}</div>` : ''}
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                } else if (region.subRegions) {
+                    for (const [subName, areas] of Object.entries(region.subRegions)) {
+                        html += `<h3 class="subsection-title">${subName}</h3>`;
+                        html += '<div class="stamp-grid">';
+                        for (const area of areas) {
+                            const stampKey = getStampKey('region', regionKey, area);
+                            const stamped = isStamped(stampKey);
+                            html += `
+                                <div class="stamp-item ${stamped ? 'stamped' : ''}"
+                                     data-type="region" data-category="${regionKey}" data-name="${area}">
+                                    ${stamped ? '<div class="stamp-badge">✓</div>' : ''}
+                                    <div class="stamp-icon">${stamped ? '✅' : '📍'}</div>
+                                    <div class="stamp-name">${area}</div>
+                                    ${stamped ? `<div class="stamp-date">${formatDate(getStampDate(stampKey))}</div>` : ''}
+                                </div>
+                            `;
+                        }
+                        html += '</div>';
+                    }
+                }
+            }
+
+            content.innerHTML = html;
+            attachStampListeners();
+        }
+
+        function renderThemeContent(themeKey) {
+            const content = document.getElementById('content');
+            let html = '';
+
+            const themes = themeKey === 'all' ? Object.entries(themeData) : [[themeKey, themeData[themeKey]]];
+
+            for (const [key, theme] of themes) {
+                // 테마별 진행률 계산
+                let themeTotal = 0;
+                let themeStamped = 0;
+                for (const items of Object.values(theme.categories)) {
+                    themeTotal += items.length;
+                    for (const item of items) {
+                        if (isStamped(getStampKey('theme', key, item.name))) {
+                            themeStamped++;
+                        }
+                    }
+                }
+                const themePercent = themeTotal > 0 ? Math.round((themeStamped / themeTotal) * 100) : 0;
+
+                html += `
+                    <div class="theme-card">
+                        <div class="theme-card-header">
+                            <div class="theme-card-icon" style="background: ${theme.color}20; color: ${theme.color}">
+                                ${theme.icon}
+                            </div>
+                            <div>
+                                <div class="theme-card-title">${theme.name}</div>
+                                <div class="theme-card-subtitle">${themeStamped}/${themeTotal}개 완료</div>
+                            </div>
+                        </div>
+                        <div class="theme-progress">
+                            <div class="theme-progress-bar">
+                                <div class="theme-progress-fill" style="width: ${themePercent}%; background: ${theme.color}"></div>
+                            </div>
+                            <div class="theme-progress-text" style="color: ${theme.color}">${themePercent}%</div>
+                        </div>
+                `;
+
+                for (const [categoryName, items] of Object.entries(theme.categories)) {
+                    html += `<h3 class="subsection-title">${categoryName}</h3>`;
+                    html += '<div class="theme-list">';
+
+                    for (const item of items) {
+                        const stampKey = getStampKey('theme', key, item.name);
+                        const stamped = isStamped(stampKey);
+                        html += `
+                            <div class="theme-list-item ${stamped ? 'stamped' : ''}"
+                                 data-type="theme" data-category="${key}" data-name="${item.name}">
+                                <div class="item-icon">${stamped ? '✅' : '⭕'}</div>
+                                <div class="item-content">
+                                    <div class="item-name">${item.name}</div>
+                                    <div class="item-desc">${item.desc}</div>
+                                </div>
+                                ${stamped ? `<div class="item-check">✓</div>` : ''}
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+
+            content.innerHTML = html;
+            attachStampListeners();
+        }
+
+        function renderStatsPage() {
+            const content = document.getElementById('content');
+
+            // 통계 계산
+            const totalRegions = getTotalRegionCount();
+            const stampedRegions = getStampedCount();
+
+            let totalThemes = 0;
+            let stampedThemes = 0;
+            for (const theme of Object.values(themeData)) {
+                for (const items of Object.values(theme.categories)) {
+                    totalThemes += items.length;
+                    for (const item of items) {
+                        if (isStamped(getStampKey('theme', '', item.name))) {
+                            stampedThemes++;
+                        }
+                    }
+                }
+            }
+
+            // 지역별 통계
+            let regionStats = [];
+            for (const [key, region] of Object.entries(regionData)) {
+                let total = 0;
+                let stamped = 0;
+
+                if (region.areas) {
+                    total = region.areas.length;
+                    for (const area of region.areas) {
+                        if (isStamped(getStampKey('region', key, area))) stamped++;
+                    }
+                } else if (region.subRegions) {
+                    for (const areas of Object.values(region.subRegions)) {
+                        total += areas.length;
+                        for (const area of areas) {
+                            if (isStamped(getStampKey('region', key, area))) stamped++;
+                        }
+                    }
+                }
+
+                regionStats.push({ name: region.name, icon: region.icon, total, stamped, color: region.color });
+            }
+
+            let html = `
+                <div class="stats-card">
+                    <h2 class="section-title" style="margin-top: 0">📊 전체 통계</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">${stampedRegions}</div>
+                            <div class="stat-label">방문한 지역</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${totalRegions - stampedRegions}</div>
+                            <div class="stat-label">남은 지역</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${Math.round((stampedRegions / totalRegions) * 100)}%</div>
+                            <div class="stat-label">완료율</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${Object.keys(stamps).length}</div>
+                            <div class="stat-label">총 스탬프</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h2 class="section-title" style="margin-top: 0">🗺️ 지역별 현황</h2>
+            `;
+
+            for (const stat of regionStats) {
+                const percent = Math.round((stat.stamped / stat.total) * 100);
+                html += `
+                    <div style="margin-bottom: 15px">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px">
+                            <span>${stat.icon} ${stat.name}</span>
+                            <span style="color: ${stat.color}">${stat.stamped}/${stat.total}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%; background: ${stat.color}"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        function renderMapPage() {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="stats-card" style="text-align: center; padding: 40px 20px">
+                    <div style="font-size: 4rem; margin-bottom: 20px">🗺️</div>
+                    <h2 style="margin-bottom: 10px">지도 기능</h2>
+                    <p style="color: var(--text-light)">
+                        지도 기능은 준비 중입니다.<br>
+                        추후 업데이트에서 만나보세요!
+                    </p>
+                </div>
+            `;
+        }
+
+        function renderSettingsPage() {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="stats-card">
+                    <h2 class="section-title" style="margin-top: 0">⚙️ 설정</h2>
+
+                    <div class="theme-list-item" onclick="exportData()">
+                        <div class="item-icon">💾</div>
+                        <div class="item-content">
+                            <div class="item-name">데이터 내보내기</div>
+                            <div class="item-desc">스탬프 기록을 JSON 파일로 저장</div>
+                        </div>
+                    </div>
+
+                    <div class="theme-list-item" onclick="document.getElementById('import-file').click()">
+                        <div class="item-icon">📂</div>
+                        <div class="item-content">
+                            <div class="item-name">데이터 가져오기</div>
+                            <div class="item-desc">백업 파일에서 복원</div>
+                        </div>
+                    </div>
+                    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+
+                    <div class="theme-list-item" onclick="resetData()">
+                        <div class="item-icon">🗑️</div>
+                        <div class="item-content">
+                            <div class="item-name">데이터 초기화</div>
+                            <div class="item-desc">모든 스탬프 기록 삭제</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h2 class="section-title" style="margin-top: 0">ℹ️ 앱 정보</h2>
+                    <p style="color: var(--text-light); line-height: 1.6">
+                        <strong>전국 스탬프북 v1.0</strong><br><br>
+                        대한민국 161개 시·군을 완전정복하세요!<br>
+                        지역별, 테마별로 스탬프를 모아보세요.<br><br>
+                        📍 지역별: 161개 시·군·구<br>
+                        🏛️ 역사: 삼국시대~근대<br>
+                        🍜 미식: 전국 맛집·빵집·카페<br>
+                        🏔️ 자연: 명산, 액티비티, 꽃투어<br>
+                        ⭐ 특수: 관광100선, 촬영지 등
+                    </p>
+                </div>
+            `;
+        }
+
+        // ==================== 이벤트 핸들러 ====================
+
+        function attachStampListeners() {
+            document.querySelectorAll('.stamp-item, .theme-list-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const type = item.dataset.type;
+                    const category = item.dataset.category;
+                    const name = item.dataset.name;
+                    const key = getStampKey(type, category, name);
+
+                    currentStampTarget = { type, category, name, key };
+
+                    if (isStamped(key)) {
+                        // 이미 찍힌 경우 삭제 확인
+                        document.getElementById('delete-modal-text').textContent =
+                            `"${name}" 스탬프를 취소하시겠습니까?`;
+                        document.getElementById('delete-modal').classList.add('active');
+                    } else {
+                        // 스탬프 찍기 확인
+                        document.getElementById('modal-title').textContent = name;
+                        document.getElementById('modal-text').textContent = '이 장소에 방문하셨나요?';
+                        document.getElementById('stamp-modal').classList.add('active');
+                    }
+                });
+            });
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const items = document.querySelectorAll('.stamp-item, .theme-list-item');
+
+            items.forEach(item => {
+                const name = item.dataset.name.toLowerCase();
+                if (query === '' || name.includes(query)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function exportData() {
+            const data = JSON.stringify(stamps, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `stampbook_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('데이터가 내보내졌습니다');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    stamps = { ...stamps, ...imported };
+                    saveStamps();
+                    updateProgress();
+                    renderContent();
+                    showToast('데이터를 가져왔습니다');
+                } catch (err) {
+                    showToast('파일 형식이 올바르지 않습니다');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function resetData() {
+            if (confirm('정말 모든 스탬프를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                stamps = {};
+                saveStamps();
+                updateProgress();
+                renderContent();
+                showToast('모든 스탬프가 삭제되었습니다');
+            }
+        }
+
+        function renderContent() {
+            document.getElementById('region-tabs').classList.toggle('hidden', currentMainTab !== 'region');
+            document.getElementById('theme-tabs').classList.toggle('hidden', currentMainTab !== 'theme');
+            document.getElementById('search-input').value = '';
+
+            if (currentPage === 'home') {
+                if (currentMainTab === 'region') {
+                    renderRegionContent(currentRegion);
+                } else {
+                    renderThemeContent(currentTheme);
+                }
+            } else if (currentPage === 'stats') {
+                renderStatsPage();
+            } else if (currentPage === 'map') {
+                renderMapPage();
+            } else if (currentPage === 'settings') {
+                renderSettingsPage();
+            }
+        }
+
+        // ==================== 초기화 ====================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 메인 탭 이벤트
+            document.querySelectorAll('#main-tabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#main-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMainTab = btn.dataset.tab;
+                    currentPage = 'home';
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector('.nav-btn[data-page="home"]').classList.add('active');
+                    renderContent();
+                });
+            });
+
+            // 지역 탭 이벤트
+            document.querySelectorAll('#region-tabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#region-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentRegion = btn.dataset.region;
+                    renderContent();
+                });
+            });
+
+            // 테마 탭 이벤트
+            document.querySelectorAll('#theme-tabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#theme-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTheme = btn.dataset.theme;
+                    renderContent();
+                });
+            });
+
+            // 하단 네비게이션 이벤트
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentPage = btn.dataset.page;
+
+                    const showTabs = currentPage === 'home';
+                    document.getElementById('main-tabs').style.display = showTabs ? 'flex' : 'none';
+                    document.getElementById('region-tabs').style.display = showTabs && currentMainTab === 'region' ? 'flex' : 'none';
+                    document.getElementById('theme-tabs').style.display = showTabs && currentMainTab === 'theme' ? 'flex' : 'none';
+                    document.querySelector('.search-container').style.display = showTabs ? 'block' : 'none';
+
+                    renderContent();
+                });
+            });
+
+            // 검색 이벤트
+            document.getElementById('search-input').addEventListener('input', handleSearch);
+
+            // 모달 이벤트
+            document.getElementById('modal-cancel').addEventListener('click', () => {
+                document.getElementById('stamp-modal').classList.remove('active');
+            });
+
+            document.getElementById('modal-confirm').addEventListener('click', () => {
+                if (currentStampTarget) {
+                    stamps[currentStampTarget.key] = new Date().toISOString();
+                    saveStamps();
+                    updateProgress();
+                    renderContent();
+                    showToast(`🎉 ${currentStampTarget.name} 스탬프 획득!`);
+                }
+                document.getElementById('stamp-modal').classList.remove('active');
+            });
+
+            document.getElementById('delete-cancel').addEventListener('click', () => {
+                document.getElementById('delete-modal').classList.remove('active');
+            });
+
+            document.getElementById('delete-confirm').addEventListener('click', () => {
+                if (currentStampTarget) {
+                    delete stamps[currentStampTarget.key];
+                    saveStamps();
+                    updateProgress();
+                    renderContent();
+                    showToast('스탬프가 취소되었습니다');
+                }
+                document.getElementById('delete-modal').classList.remove('active');
+            });
+
+            // 초기 렌더링
+            updateProgress();
+            renderContent();
+        });
+    </script>
+</body>
+</html>

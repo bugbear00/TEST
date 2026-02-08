@@ -540,6 +540,188 @@
             pointer-events: none;
             z-index: 250;
         }
+
+        /* Map Styles */
+        .map-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .map-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .map-legend {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .map-svg-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .map-svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .map-region {
+            cursor: pointer;
+            transition: all 0.3s;
+            stroke: #fff;
+            stroke-width: 1;
+        }
+
+        .map-region:hover {
+            filter: brightness(1.1);
+            stroke-width: 2;
+        }
+
+        .map-region.not-visited {
+            fill: #e2e8f0;
+        }
+
+        .map-region.partial {
+            fill: #fbbf24;
+        }
+
+        .map-region.complete {
+            fill: #22c55e;
+        }
+
+        .map-region-label {
+            font-size: 8px;
+            fill: #1e293b;
+            pointer-events: none;
+            font-weight: 500;
+            text-anchor: middle;
+        }
+
+        .map-info-card {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .map-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .map-info-title {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .map-info-progress {
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .map-info-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .map-info-chip {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: white;
+            border: 1px solid var(--border);
+        }
+
+        .map-info-chip.stamped {
+            background: #dcfce7;
+            border-color: #22c55e;
+            color: #166534;
+        }
+
+        .map-zoom-controls {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .map-zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-zoom-btn:hover {
+            background: var(--bg);
+        }
+
+        .map-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .map-stat-item {
+            background: var(--bg);
+            padding: 12px 8px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .map-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .map-stat-label {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
@@ -1353,16 +1535,280 @@
 
         function renderMapPage() {
             const content = document.getElementById('content');
+
+            // 각 지역별 방문 현황 계산
+            const regionStatus = {};
+            for (const [key, region] of Object.entries(regionData)) {
+                let total = 0;
+                let stamped = 0;
+
+                if (region.areas) {
+                    total = region.areas.length;
+                    for (const area of region.areas) {
+                        if (isStamped(getStampKey('region', key, area))) stamped++;
+                    }
+                } else if (region.subRegions) {
+                    for (const areas of Object.values(region.subRegions)) {
+                        total += areas.length;
+                        for (const area of areas) {
+                            if (isStamped(getStampKey('region', key, area))) stamped++;
+                        }
+                    }
+                }
+
+                regionStatus[key] = { total, stamped, percent: Math.round((stamped / total) * 100) };
+            }
+
+            const totalRegions = getTotalRegionCount();
+            const stampedRegions = getStampedCount();
+
+            // 지역별 상태 클래스
+            function getStatusClass(key) {
+                const status = regionStatus[key];
+                if (status.stamped === 0) return 'not-visited';
+                if (status.stamped === status.total) return 'complete';
+                return 'partial';
+            }
+
             content.innerHTML = `
-                <div class="stats-card" style="text-align: center; padding: 40px 20px">
-                    <div style="font-size: 4rem; margin-bottom: 20px">🗺️</div>
-                    <h2 style="margin-bottom: 10px">지도 기능</h2>
-                    <p style="color: var(--text-light)">
-                        지도 기능은 준비 중입니다.<br>
-                        추후 업데이트에서 만나보세요!
-                    </p>
+                <div class="map-container">
+                    <div class="map-header">
+                        <div class="map-title">🗺️ 전국 방문 현황</div>
+                        <div class="map-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #e2e8f0"></div>
+                                <span>미방문</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #fbbf24"></div>
+                                <span>진행중</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #22c55e"></div>
+                                <span>완료</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="map-stats-grid">
+                        <div class="map-stat-item">
+                            <div class="map-stat-value">${stampedRegions}</div>
+                            <div class="map-stat-label">방문</div>
+                        </div>
+                        <div class="map-stat-item">
+                            <div class="map-stat-value">${totalRegions - stampedRegions}</div>
+                            <div class="map-stat-label">미방문</div>
+                        </div>
+                        <div class="map-stat-item">
+                            <div class="map-stat-value">${Math.round((stampedRegions / totalRegions) * 100)}%</div>
+                            <div class="map-stat-label">완료율</div>
+                        </div>
+                        <div class="map-stat-item">
+                            <div class="map-stat-value">161</div>
+                            <div class="map-stat-label">전체</div>
+                        </div>
+                    </div>
+
+                    <div class="map-svg-container">
+                        <svg class="map-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 강원도 -->
+                            <path class="map-region ${getStatusClass('gangwon')}" data-region="gangwon"
+                                d="M220,50 L280,40 L320,60 L340,100 L330,150 L300,180 L260,170 L230,140 L200,120 L190,80 Z"/>
+                            <text class="map-region-label" x="270" y="100">강원</text>
+
+                            <!-- 경기도 -->
+                            <path class="map-region ${getStatusClass('gyeonggi')}" data-region="gyeonggi"
+                                d="M140,80 L190,80 L200,120 L230,140 L220,180 L180,200 L140,190 L120,150 L110,110 Z"/>
+                            <text class="map-region-label" x="165" y="145">경기</text>
+
+                            <!-- 서울 -->
+                            <path class="map-region ${getStatusClass('seoul')}" data-region="seoul"
+                                d="M155,125 L175,120 L185,135 L180,150 L160,155 L150,140 Z"/>
+                            <text class="map-region-label" x="167" y="140">서울</text>
+
+                            <!-- 인천 -->
+                            <path class="map-region ${getStatusClass('incheon')}" data-region="incheon"
+                                d="M100,120 L130,110 L140,130 L135,160 L115,170 L95,150 Z"/>
+                            <text class="map-region-label" x="117" y="145">인천</text>
+
+                            <!-- 충청북도 (충청권) -->
+                            <path class="map-region ${getStatusClass('chungcheong')}" data-region="chungcheong"
+                                d="M180,200 L220,180 L260,170 L280,200 L270,250 L230,280 L180,270 L150,240 L140,200 Z"/>
+                            <text class="map-region-label" x="210" y="230">충청</text>
+
+                            <!-- 경상북도 (경상권 상단) -->
+                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
+                                d="M280,200 L300,180 L330,150 L360,170 L370,220 L360,280 L320,320 L280,340 L250,320 L240,280 L270,250 Z"/>
+                            <text class="map-region-label" x="310" y="250">경상</text>
+
+                            <!-- 전라북도 (전라권 상단) -->
+                            <path class="map-region ${getStatusClass('jeolla')}" data-region="jeolla"
+                                d="M120,260 L150,240 L180,270 L190,310 L170,350 L130,370 L90,350 L80,300 Z"/>
+                            <text class="map-region-label" x="135" y="310">전라</text>
+
+                            <!-- 전라남도 + 경상남도 하단 연결 -->
+                            <path class="map-region ${getStatusClass('jeolla')}" data-region="jeolla"
+                                d="M80,300 L90,350 L130,370 L170,350 L160,400 L120,430 L70,420 L50,380 L60,340 Z"
+                                style="opacity: 0.8"/>
+
+                            <!-- 경상남도 -->
+                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
+                                d="M190,310 L230,280 L250,320 L280,340 L300,380 L280,420 L230,430 L190,400 L170,350 Z"
+                                style="opacity: 0.8"/>
+
+                            <!-- 부산 (경상권) -->
+                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
+                                d="M280,420 L310,400 L330,420 L320,450 L290,455 L270,440 Z"
+                                style="opacity: 0.9"/>
+                            <text class="map-region-label" x="300" y="435">부산</text>
+
+                            <!-- 제주도 -->
+                            <path class="map-region ${getStatusClass('jeju')}" data-region="jeju"
+                                d="M100,470 L170,465 L180,485 L160,500 L110,500 L90,485 Z"/>
+                            <text class="map-region-label" x="140" y="485">제주</text>
+
+                            <!-- 울릉도 -->
+                            <circle class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
+                                cx="380" cy="120" r="12"/>
+                            <text class="map-region-label" x="380" y="123" style="font-size: 6px">울릉</text>
+                        </svg>
+
+                        <div class="map-zoom-controls">
+                            <button class="map-zoom-btn" onclick="zoomMap(1.2)">+</button>
+                            <button class="map-zoom-btn" onclick="zoomMap(0.8)">-</button>
+                            <button class="map-zoom-btn" onclick="resetMapZoom()">↺</button>
+                        </div>
+                    </div>
+
+                    <div class="map-info-card" id="map-info">
+                        <div class="map-info-header">
+                            <div class="map-info-title">📍 지역을 선택하세요</div>
+                        </div>
+                        <p style="color: var(--text-light); font-size: 0.85rem">
+                            지도에서 지역을 탭하면 상세 정보를 볼 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 지역별 진행률 리스트 -->
+                <div class="map-container">
+                    <div class="map-title" style="margin-bottom: 15px">📊 지역별 진행률</div>
+                    ${Object.entries(regionData).map(([key, region]) => {
+                        const status = regionStatus[key];
+                        return `
+                            <div class="theme-list-item" onclick="showRegionDetail('${key}')" style="margin-bottom: 8px">
+                                <div class="item-icon">${region.icon}</div>
+                                <div class="item-content" style="flex: 1">
+                                    <div class="item-name">${region.name}</div>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px">
+                                        <div class="theme-progress-bar" style="flex: 1">
+                                            <div class="theme-progress-fill" style="width: ${status.percent}%; background: ${region.color}"></div>
+                                        </div>
+                                        <span style="font-size: 0.75rem; color: ${region.color}; min-width: 60px; text-align: right">
+                                            ${status.stamped}/${status.total}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
+
+            // 지도 클릭 이벤트 바인딩
+            document.querySelectorAll('.map-region').forEach(region => {
+                region.addEventListener('click', () => {
+                    const regionKey = region.dataset.region;
+                    showRegionDetail(regionKey);
+                });
+            });
+        }
+
+        // 지도 줌 관련 변수와 함수
+        let mapScale = 1;
+
+        function zoomMap(factor) {
+            mapScale *= factor;
+            mapScale = Math.max(0.5, Math.min(3, mapScale));
+            const svg = document.querySelector('.map-svg');
+            if (svg) {
+                svg.style.transform = `scale(${mapScale})`;
+                svg.style.transformOrigin = 'center center';
+            }
+        }
+
+        function resetMapZoom() {
+            mapScale = 1;
+            const svg = document.querySelector('.map-svg');
+            if (svg) {
+                svg.style.transform = 'scale(1)';
+            }
+        }
+
+        function showRegionDetail(regionKey) {
+            const region = regionData[regionKey];
+            const infoCard = document.getElementById('map-info');
+            if (!infoCard || !region) return;
+
+            let areas = [];
+            if (region.areas) {
+                areas = region.areas;
+            } else if (region.subRegions) {
+                for (const subAreas of Object.values(region.subRegions)) {
+                    areas = areas.concat(subAreas);
+                }
+            }
+
+            let stampedCount = 0;
+            const chips = areas.map(area => {
+                const stampKey = getStampKey('region', regionKey, area);
+                const stamped = isStamped(stampKey);
+                if (stamped) stampedCount++;
+                return `<span class="map-info-chip ${stamped ? 'stamped' : ''}">${stamped ? '✓ ' : ''}${area}</span>`;
+            }).join('');
+
+            infoCard.innerHTML = `
+                <div class="map-info-header">
+                    <div class="map-info-title">${region.icon} ${region.name}</div>
+                    <div class="map-info-progress">${stampedCount}/${areas.length} 완료</div>
+                </div>
+                <div class="map-info-list">
+                    ${chips}
+                </div>
+                <button class="modal-btn primary" style="width: 100%; margin-top: 15px"
+                    onclick="goToRegion('${regionKey}')">
+                    이 지역 스탬프 보기 →
+                </button>
+            `;
+
+            // 선택된 지역 하이라이트
+            document.querySelectorAll('.map-region').forEach(r => {
+                r.style.strokeWidth = r.dataset.region === regionKey ? '3' : '1';
+                r.style.stroke = r.dataset.region === regionKey ? '#1e293b' : '#fff';
+            });
+        }
+
+        function goToRegion(regionKey) {
+            currentPage = 'home';
+            currentMainTab = 'region';
+            currentRegion = regionKey;
+
+            // UI 업데이트
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.nav-btn[data-page="home"]').classList.add('active');
+
+            document.querySelectorAll('#main-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('#main-tabs .tab-btn[data-tab="region"]').classList.add('active');
+
+            document.querySelectorAll('#region-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`#region-tabs .tab-btn[data-region="${regionKey}"]`).classList.add('active');
+
+            document.getElementById('main-tabs').style.display = 'flex';
+            document.getElementById('region-tabs').style.display = 'flex';
+            document.getElementById('theme-tabs').style.display = 'none';
+            document.querySelector('.search-container').style.display = 'block';
+
+            renderContent();
         }
 
         function renderSettingsPage() {

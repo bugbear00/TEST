@@ -726,100 +726,12 @@
             margin-top: 2px;
         }
 
-        /* Map Type Tabs */
-        .map-type-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .map-type-btn {
-            flex: 1;
-            padding: 10px;
-            border: 2px solid var(--border);
-            background: white;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .map-type-btn.active {
-            border-color: var(--primary);
-            background: #eff6ff;
-            color: var(--primary);
-        }
-
-        .map-type-btn .badge {
-            font-size: 0.65rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            background: var(--border);
-        }
-
-        .map-type-btn.active .badge {
-            background: var(--primary);
-            color: white;
-        }
-
         /* Leaflet Map Container */
         #leaflet-map {
             width: 100%;
-            height: 350px;
+            height: 400px;
             border-radius: 12px;
             z-index: 1;
-        }
-
-        /* Offline Map (Image-based) */
-        .offline-map-container {
-            position: relative;
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-        }
-
-        .offline-map-img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .offline-map-svg {
-            width: 100%;
-            height: auto;
-        }
-
-        .map-clickable-area {
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .map-clickable-area:hover {
-            filter: brightness(0.95);
-        }
-
-        .offline-map-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .region-marker {
-            position: absolute;
-            transform: translate(-50%, -50%);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .region-marker:hover {
-            transform: translate(-50%, -50%) scale(1.1);
         }
 
         .region-dot {
@@ -1685,8 +1597,6 @@
             content.innerHTML = html;
         }
 
-        // 현재 지도 모드 (offline / online)
-        let currentMapMode = 'offline';
         let leafletMap = null;
 
         function renderMapPage() {
@@ -1757,25 +1667,8 @@
                         </div>
                     </div>
 
-                    <!-- 지도 타입 탭 -->
-                    <div class="map-type-tabs">
-                        <button class="map-type-btn ${currentMapMode === 'offline' ? 'active' : ''}" onclick="switchMapMode('offline')">
-                            📴 오프라인
-                            <span class="badge" style="background: #22c55e; color: white; border-radius: 4px;">인터넷 불필요</span>
-                        </button>
-                        <button class="map-type-btn ${currentMapMode === 'online' ? 'active' : ''}" onclick="switchMapMode('online')">
-                            🌐 온라인
-                            <span class="badge" style="background: #3b82f6; color: white; border-radius: 4px;">실제 지도</span>
-                        </button>
-                    </div>
-
-                    <!-- 지도 컨테이너 -->
-                    <div id="map-display-container">
-                        <div id="offline-map-container" style="display: ${currentMapMode === 'offline' ? 'block' : 'none'}">
-                            <!-- 오프라인 지도 -->
-                        </div>
-                        <div id="leaflet-map" style="display: ${currentMapMode === 'online' ? 'block' : 'none'}; height: 400px; border-radius: 12px; z-index: 1;"></div>
-                    </div>
+                    <!-- Leaflet 지도 -->
+                    <div id="leaflet-map" style="height: 400px; border-radius: 12px; z-index: 1;"></div>
 
                     <div class="map-info-card" id="map-info">
                         <div class="map-info-header">
@@ -1812,157 +1705,12 @@
                 </div>
             `;
 
-            // 현재 모드에 따라 지도 렌더링
-            if (currentMapMode === 'offline') {
-                renderOfflineMap(regionStatus);
-            } else {
-                renderOnlineMap(regionStatus);
-            }
+            // Leaflet 지도 렌더링
+            renderLeafletMap(regionStatus);
         }
 
-        // 지도 모드 전환
-        function switchMapMode(mode) {
-            currentMapMode = mode;
-
-            // 탭 상태 업데이트
-            document.querySelectorAll('.map-type-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.map-type-btn').classList.add('active');
-
-            // 컨테이너 전환
-            const offlineContainer = document.getElementById('offline-map-container');
-            const onlineContainer = document.getElementById('leaflet-map');
-
-            if (mode === 'offline') {
-                offlineContainer.style.display = 'block';
-                onlineContainer.style.display = 'none';
-                renderOfflineMap(calculateRegionStatus());
-            } else {
-                offlineContainer.style.display = 'none';
-                onlineContainer.style.display = 'block';
-                renderOnlineMap(calculateRegionStatus());
-            }
-        }
-
-        // 지역 상태 계산 헬퍼
-        function calculateRegionStatus() {
-            const regionStatus = {};
-            for (const [key, region] of Object.entries(regionData)) {
-                let total = 0;
-                let stamped = 0;
-
-                if (region.areas) {
-                    total = region.areas.length;
-                    for (const area of region.areas) {
-                        if (isStamped(getStampKey('region', key, area))) stamped++;
-                    }
-                } else if (region.subRegions) {
-                    for (const areas of Object.values(region.subRegions)) {
-                        total += areas.length;
-                        for (const area of areas) {
-                            if (isStamped(getStampKey('region', key, area))) stamped++;
-                        }
-                    }
-                }
-
-                regionStatus[key] = { total, stamped, percent: Math.round((stamped / total) * 100) };
-            }
-            return regionStatus;
-        }
-
-        // 오프라인 지도 렌더링 (이미지 기반 + 클릭 가능 영역)
-        function renderOfflineMap(regionStatus) {
-            const container = document.getElementById('offline-map-container');
-            if (!container) return;
-
-            // 지역별 색상 결정
-            function getRegionColor(key) {
-                const status = regionStatus[key];
-                if (!status) return '#e2e8f0';
-                if (status.stamped === 0) return '#e2e8f0';
-                if (status.stamped === status.total) return '#22c55e';
-                return '#fbbf24';
-            }
-
-            // 17개 시도 위치 정보 (상대 좌표 %)
-            const regions = [
-                { key: 'seoul', name: '서울', x: 32, y: 24, size: 'small' },
-                { key: 'incheon', name: '인천', x: 25, y: 26, size: 'small' },
-                { key: 'gyeonggi', name: '경기', x: 35, y: 20, size: 'large' },
-                { key: 'gangwon', name: '강원', x: 55, y: 18, size: 'xlarge' },
-                { key: 'chungcheong', name: '충북', x: 45, y: 36, size: 'medium' },
-                { key: 'chungcheong', name: '충남', x: 28, y: 42, size: 'medium', subKey: 'chungnam' },
-                { key: 'chungcheong', name: '세종', x: 38, y: 40, size: 'tiny' },
-                { key: 'chungcheong', name: '대전', x: 42, y: 46, size: 'small' },
-                { key: 'jeolla', name: '전북', x: 32, y: 54, size: 'medium' },
-                { key: 'jeolla', name: '광주', x: 30, y: 68, size: 'small' },
-                { key: 'jeolla', name: '전남', x: 28, y: 75, size: 'large' },
-                { key: 'gyeongsang', name: '경북', x: 62, y: 42, size: 'xlarge' },
-                { key: 'gyeongsang', name: '대구', x: 58, y: 52, size: 'small' },
-                { key: 'gyeongsang', name: '경남', x: 55, y: 68, size: 'large' },
-                { key: 'gyeongsang', name: '울산', x: 72, y: 58, size: 'small' },
-                { key: 'gyeongsang', name: '부산', x: 68, y: 70, size: 'small' },
-                { key: 'jeju', name: '제주', x: 30, y: 95, size: 'medium' }
-            ];
-
-            // 사이즈별 마커 크기
-            const sizes = {
-                tiny: { w: 40, h: 30 },
-                small: { w: 50, h: 35 },
-                medium: { w: 60, h: 40 },
-                large: { w: 70, h: 45 },
-                xlarge: { w: 80, h: 50 }
-            };
-
-            let html = `
-                <div class="offline-map-wrapper" style="position: relative; width: 100%; height: 450px; background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%); border-radius: 12px; overflow: hidden;">
-                    <!-- 한반도 실루엣 배경 -->
-                    <svg viewBox="0 0 100 100" style="position: absolute; width: 100%; height: 100%; opacity: 0.3;">
-                        <path d="M30,5 Q45,3 55,8 L65,12 Q75,18 78,28 L80,40 Q82,50 78,60 L72,75 Q68,82 60,85 L45,88 Q35,90 28,85 L22,75 Q18,65 20,55 L25,40 Q28,25 30,15 Z"
-                              fill="#0ea5e9" stroke="#0284c7" stroke-width="0.5"/>
-                        <!-- 제주도 -->
-                        <ellipse cx="32" cy="95" rx="8" ry="3" fill="#0ea5e9" stroke="#0284c7" stroke-width="0.3"/>
-                    </svg>
-
-                    <!-- 지역 마커들 -->
-                    ${regions.map(r => {
-                        const color = getRegionColor(r.key);
-                        const size = sizes[r.size];
-                        const status = regionStatus[r.key];
-                        const percent = status ? status.percent : 0;
-                        return `
-                            <div class="map-marker" onclick="showRegionDetail('${r.key}')"
-                                 style="position: absolute; left: ${r.x}%; top: ${r.y}%; transform: translate(-50%, -50%);
-                                        width: ${size.w}px; min-height: ${size.h}px; padding: 6px 8px;
-                                        background: ${color}; border-radius: 8px; cursor: pointer;
-                                        box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 2px solid white;
-                                        display: flex; flex-direction: column; align-items: center; justify-content: center;
-                                        transition: transform 0.2s, box-shadow 0.2s;"
-                                 onmouseover="this.style.transform='translate(-50%, -50%) scale(1.1)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.25)'"
-                                 onmouseout="this.style.transform='translate(-50%, -50%)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">
-                                <div style="font-size: ${r.size === 'tiny' ? '10px' : '11px'}; font-weight: 700; color: ${color === '#e2e8f0' ? '#64748b' : 'white'}; text-shadow: ${color === '#e2e8f0' ? 'none' : '0 1px 2px rgba(0,0,0,0.3)'};">
-                                    ${r.name}
-                                </div>
-                                <div style="font-size: 9px; color: ${color === '#e2e8f0' ? '#94a3b8' : 'rgba(255,255,255,0.9)'}; margin-top: 2px;">
-                                    ${percent}%
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-
-                    <!-- 범례 -->
-                    <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.95); padding: 8px 12px; border-radius: 8px; font-size: 10px;">
-                        <div style="display: flex; gap: 8px;">
-                            <span>📴 오프라인 모드</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        // 온라인 지도 렌더링 (Leaflet)
-        function renderOnlineMap(regionStatus) {
+        // Leaflet 지도 렌더링
+        function renderLeafletMap(regionStatus) {
             const container = document.getElementById('leaflet-map');
             if (!container) return;
 

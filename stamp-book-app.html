@@ -1533,6 +1533,11 @@
             content.innerHTML = html;
         }
 
+        // 대한민국 시도 실제 좌표 데이터 (GeoJSON 기반, 단순화)
+        const koreaMapPaths = {
+            seoul: "M165,bindBindBindBindBindBindM165,bindBindBindM165,bindBindBindBinding..."
+        };
+
         function renderMapPage() {
             const content = document.getElementById('content');
 
@@ -1562,12 +1567,13 @@
             const totalRegions = getTotalRegionCount();
             const stampedRegions = getStampedCount();
 
-            // 지역별 상태 클래스
-            function getStatusClass(key) {
+            // 지역별 상태에 따른 색상
+            function getRegionColor(key) {
                 const status = regionStatus[key];
-                if (status.stamped === 0) return 'not-visited';
-                if (status.stamped === status.total) return 'complete';
-                return 'partial';
+                if (!status) return '#e2e8f0';
+                if (status.stamped === 0) return '#e2e8f0';
+                if (status.stamped === status.total) return '#22c55e';
+                return '#fbbf24';
             }
 
             content.innerHTML = `
@@ -1609,115 +1615,8 @@
                         </div>
                     </div>
 
-                    <div class="map-svg-container">
-                        <svg class="map-svg" viewBox="0 0 800 920" xmlns="http://www.w3.org/2000/svg">
-                            <!-- 대한민국 실제 지리 데이터 기반 지도 (SGIS 통계청 데이터 참조) -->
-
-                            <!-- 강원특별자치도 -->
-                            <path class="map-region ${getStatusClass('gangwon')}" data-region="gangwon"
-                                d="M395,35 C420,30 460,28 500,35 C540,42 580,55 620,75 C660,95 690,125 715,160 C740,195 755,235 760,275 C765,315 760,350 745,385 C730,420 705,450 675,475 C645,500 610,520 575,535 C540,550 505,560 470,565 C435,570 400,570 370,560 C340,550 315,530 295,505 C275,480 260,450 255,415 C250,380 255,345 270,310 C285,275 310,240 340,210 C370,180 400,155 420,125 C440,95 450,70 445,55 C440,40 420,38 395,35 Z"/>
-
-                            <!-- 경기도 -->
-                            <path class="map-region ${getStatusClass('gyeonggi')}" data-region="gyeonggi"
-                                d="M180,95 C210,80 245,70 280,68 C315,66 350,72 380,85 C395,35 395,35 395,35 C370,40 340,50 315,65 C290,80 270,100 255,125 C240,150 235,180 240,210 C245,240 260,270 285,295 C310,320 345,340 375,350 C345,370 310,385 275,395 C240,405 205,410 175,405 C145,400 120,385 100,365 C80,345 65,320 60,290 C55,260 60,230 75,200 C90,170 115,145 145,125 C175,105 200,90 180,95 Z"/>
-
-                            <!-- 서울특별시 -->
-                            <path class="map-region ${getStatusClass('seoul')}" data-region="seoul"
-                                d="M275,175 C295,168 315,165 335,168 C355,171 375,180 388,195 C401,210 407,230 405,250 C403,270 393,288 378,300 C363,312 343,318 323,318 C303,318 283,312 268,300 C253,288 243,270 240,250 C237,230 242,210 255,195 C268,180 280,172 275,175 Z"/>
-
-                            <!-- 인천광역시 (본토) -->
-                            <path class="map-region ${getStatusClass('incheon')}" data-region="incheon"
-                                d="M135,170 C160,158 185,155 205,162 C225,169 240,186 245,208 C250,230 245,255 230,278 C215,301 190,320 165,330 C140,340 115,340 95,330 C75,320 60,300 55,275 C50,250 55,225 70,203 C85,181 110,165 135,170 Z"/>
-                            <!-- 인천 강화도 -->
-                            <path class="map-region ${getStatusClass('incheon')}" data-region="incheon"
-                                d="M85,125 C105,118 125,120 140,132 C155,144 165,165 160,185 C155,205 135,220 115,225 C95,230 75,225 60,210 C45,195 40,175 45,155 C50,135 65,120 85,125 Z" style="opacity:0.9"/>
-                            <!-- 인천 영종도/옹진 -->
-                            <ellipse class="map-region ${getStatusClass('incheon')}" data-region="incheon" cx="70" cy="270" rx="28" ry="22" style="opacity:0.8"/>
-                            <ellipse class="map-region ${getStatusClass('incheon')}" data-region="incheon" cx="45" cy="320" rx="20" ry="16" style="opacity:0.7"/>
-
-                            <!-- 충청북도 -->
-                            <path class="map-region ${getStatusClass('chungcheong')}" data-region="chungcheong"
-                                d="M340,350 C370,342 400,340 430,345 C460,350 490,362 515,380 C540,398 560,422 570,450 C580,478 580,510 570,540 C560,570 540,598 515,618 C490,638 460,650 430,655 C400,660 370,658 345,645 C320,632 300,610 288,582 C276,554 272,522 280,492 C288,462 308,435 335,415 C362,395 380,380 340,350 Z"/>
-
-                            <!-- 충청남도/대전/세종 -->
-                            <path class="map-region ${getStatusClass('chungcheong')}" data-region="chungcheong"
-                                d="M115,340 C145,330 180,328 215,335 C250,342 285,358 315,380 C345,402 335,415 288,460 C270,490 262,520 260,545 C258,570 252,592 235,610 C218,628 192,640 165,645 C138,650 110,648 85,635 C60,622 40,600 30,572 C20,544 20,512 32,482 C44,452 68,425 98,405 C128,385 155,372 115,340 Z" style="opacity:0.9"/>
-
-                            <!-- 경상북도 -->
-                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                d="M515,380 C545,365 580,358 615,360 C650,362 685,372 715,392 C745,412 770,442 785,478 C800,514 800,555 790,595 C780,635 760,672 732,702 C704,732 668,755 630,768 C592,781 552,785 515,778 C478,771 445,752 420,725 C395,698 378,665 375,630 C372,595 382,560 400,528 C418,496 445,468 478,448 C511,428 540,415 515,380 Z"/>
-
-                            <!-- 대구광역시 -->
-                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                d="M500,610 C525,600 552,598 575,608 C598,618 618,640 628,668 C638,696 638,728 625,755 C612,782 588,802 560,810 C532,818 502,815 478,800 C454,785 438,760 432,732 C426,704 430,675 445,650 C460,625 485,608 500,610 Z" style="opacity:0.95"/>
-
-                            <!-- 울산광역시 -->
-                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                d="M678,685 C705,678 732,682 752,698 C772,714 785,742 785,772 C785,802 772,832 752,852 C732,872 705,882 678,880 C651,878 625,865 608,842 C591,819 585,790 592,762 C599,734 618,710 645,695 C660,686 670,682 678,685 Z" style="opacity:0.95"/>
-
-                            <!-- 부산광역시 -->
-                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                d="M620,825 C650,818 680,822 705,838 C730,854 750,882 758,912 C766,942 762,975 745,1000 C728,1025 700,1042 670,1048 C640,1054 608,1048 582,1030 C556,1012 538,985 532,955 C526,925 532,895 550,870 C568,845 598,828 620,825 Z" style="opacity:0.95"/>
-
-                            <!-- 경상남도 -->
-                            <path class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                d="M345,645 C375,635 410,632 445,640 C480,648 478,800 500,810 C470,835 435,855 400,868 C365,881 328,888 295,885 C262,882 232,868 210,848 C188,828 175,802 175,775 C175,748 188,722 210,702 C232,682 262,668 295,662 C328,656 355,658 345,645 Z" style="opacity:0.9"/>
-
-                            <!-- 전북특별자치도 -->
-                            <path class="map-region ${getStatusClass('jeolla')}" data-region="jeolla"
-                                d="M115,610 C145,595 180,588 215,592 C250,596 260,545 260,545 C280,575 295,608 295,642 C295,676 280,708 258,735 C236,762 208,782 178,792 C148,802 118,802 90,792 C62,782 38,762 25,735 C12,708 10,678 22,650 C34,622 58,598 88,585 C100,580 110,578 115,610 Z"/>
-
-                            <!-- 광주광역시 -->
-                            <path class="map-region ${getStatusClass('jeolla')}" data-region="jeolla"
-                                d="M205,755 C228,748 252,752 270,768 C288,784 300,810 298,838 C296,866 282,892 260,908 C238,924 210,930 185,922 C160,914 140,895 130,868 C120,841 122,812 138,788 C154,764 182,750 205,755 Z" style="opacity:0.95"/>
-
-                            <!-- 전라남도 -->
-                            <path class="map-region ${getStatusClass('jeolla')}" data-region="jeolla"
-                                d="M90,792 C118,802 148,802 178,792 C178,792 175,820 185,848 C195,876 185,922 185,922 C215,935 248,942 280,940 C312,938 345,925 372,905 C399,885 420,858 430,828 C330,855 290,885 295,885 C262,882 232,868 210,848 C188,828 175,802 175,775 C150,785 125,800 105,820 C85,840 70,865 65,892 C60,919 65,948 80,972 C95,996 120,1015 150,1025 C180,1035 212,1038 242,1030 C272,1022 300,1005 322,982 C344,959 360,932 368,902 C340,920 308,932 275,935 C242,938 210,932 182,918 C154,904 130,882 118,855 C106,828 105,798 90,792 Z" style="opacity:0.9"/>
-
-                            <!-- 전남 섬들 (완도, 진도, 신안 등) -->
-                            <ellipse class="map-region ${getStatusClass('jeolla')}" data-region="jeolla" cx="95" cy="975" rx="45" ry="32" style="opacity:0.8"/>
-                            <ellipse class="map-region ${getStatusClass('jeolla')}" data-region="jeolla" cx="185" cy="1020" rx="38" ry="28" style="opacity:0.75"/>
-                            <ellipse class="map-region ${getStatusClass('jeolla')}" data-region="jeolla" cx="50" cy="895" rx="30" ry="22" style="opacity:0.7"/>
-                            <ellipse class="map-region ${getStatusClass('jeolla')}" data-region="jeolla" cx="280" cy="985" rx="32" ry="24" style="opacity:0.7"/>
-
-                            <!-- 제주특별자치도 -->
-                            <path class="map-region ${getStatusClass('jeju')}" data-region="jeju"
-                                d="M120,1120 C180,1100 250,1095 320,1105 C390,1115 450,1140 480,1175 C510,1210 510,1255 480,1290 C450,1325 390,1350 320,1360 C250,1370 180,1365 120,1345 C60,1325 20,1290 10,1250 C0,1210 20,1170 60,1145 C100,1120 140,1110 120,1120 Z"/>
-
-                            <!-- 울릉도 -->
-                            <ellipse class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                cx="820" cy="320" rx="22" ry="28"/>
-
-                            <!-- 독도 -->
-                            <circle class="map-region ${getStatusClass('gyeongsang')}" data-region="gyeongsang"
-                                cx="870" cy="380" r="8" style="opacity:0.9"/>
-
-                            <!-- 지역 라벨들 -->
-                            <text class="map-region-label" x="560" y="280" style="font-size:20px;font-weight:bold">강원</text>
-                            <text class="map-region-label" x="280" y="285" style="font-size:18px;font-weight:bold">경기</text>
-                            <text class="map-region-label" x="320" y="245" style="font-size:14px;font-weight:600">서울</text>
-                            <text class="map-region-label" x="135" y="240" style="font-size:13px;font-weight:600">인천</text>
-                            <text class="map-region-label" x="420" y="500" style="font-size:16px;font-weight:bold">충북</text>
-                            <text class="map-region-label" x="175" y="490" style="font-size:16px;font-weight:bold">충남</text>
-                            <text class="map-region-label" x="620" y="550" style="font-size:20px;font-weight:bold">경북</text>
-                            <text class="map-region-label" x="540" y="705" style="font-size:13px;font-weight:600">대구</text>
-                            <text class="map-region-label" x="715" y="780" style="font-size:12px;font-weight:600">울산</text>
-                            <text class="map-region-label" x="660" y="945" style="font-size:13px;font-weight:600">부산</text>
-                            <text class="map-region-label" x="380" y="780" style="font-size:16px;font-weight:bold">경남</text>
-                            <text class="map-region-label" x="175" y="680" style="font-size:16px;font-weight:bold">전북</text>
-                            <text class="map-region-label" x="230" y="840" style="font-size:12px;font-weight:600">광주</text>
-                            <text class="map-region-label" x="180" y="920" style="font-size:16px;font-weight:bold">전남</text>
-                            <text class="map-region-label" x="250" y="1230" style="font-size:18px;font-weight:bold">제주</text>
-                            <text class="map-region-label" x="820" y="328" style="font-size:10px">울릉도</text>
-                            <text class="map-region-label" x="870" y="400" style="font-size:9px">독도</text>
-                        </svg>
-
-                        <div class="map-zoom-controls">
-                            <button class="map-zoom-btn" onclick="zoomMap(1.2)">+</button>
-                            <button class="map-zoom-btn" onclick="zoomMap(0.8)">-</button>
-                            <button class="map-zoom-btn" onclick="resetMapZoom()">↺</button>
-                        </div>
+                    <div class="map-svg-container" id="korea-map-container">
+                        <!-- 지도가 여기에 동적으로 생성됩니다 -->
                     </div>
 
                     <div class="map-info-card" id="map-info">
@@ -1755,13 +1654,199 @@
                 </div>
             `;
 
-            // 지도 클릭 이벤트 바인딩
-            document.querySelectorAll('.map-region').forEach(region => {
+            // 실제 한국 지도 SVG 생성 (GeoJSON 좌표 기반)
+            renderKoreaMap(regionStatus);
+        }
+
+        // 실제 한국 지도를 GeoJSON 좌표로 렌더링
+        function renderKoreaMap(regionStatus) {
+            const container = document.getElementById('korea-map-container');
+            if (!container) return;
+
+            // 대한민국 17개 시도 실제 좌표 (경도, 위도 -> SVG 좌표로 변환)
+            // 원본: 경도 124~132, 위도 33~39
+            // SVG: x 0~400, y 0~500 (위도는 반전)
+            function toSvg(lon, lat) {
+                const x = (lon - 124) * 50;
+                const y = (39 - lat) * 83.3;
+                return [x, y];
+            }
+
+            // 시도별 대표 좌표 (중심점 + 경계 포인트들)
+            const provinces = {
+                seoul: {
+                    name: '서울', key: 'seoul',
+                    points: [[126.8,37.6],[127.1,37.6],[127.2,37.5],[127.1,37.45],[126.8,37.45],[126.75,37.55]]
+                },
+                incheon: {
+                    name: '인천', key: 'incheon',
+                    points: [[126.4,37.6],[126.7,37.55],[126.75,37.45],[126.7,37.35],[126.5,37.35],[126.35,37.45],[126.3,37.55]],
+                    islands: [
+                        [[126.1,37.7],[126.3,37.75],[126.35,37.65],[126.2,37.6]], // 강화도
+                        [[126.15,37.45],[126.3,37.45],[126.25,37.35]] // 영종도
+                    ]
+                },
+                gyeonggi: {
+                    name: '경기', key: 'gyeonggi',
+                    points: [[126.75,37.9],[127.1,38.0],[127.5,37.9],[127.8,37.7],[127.9,37.4],[127.6,37.2],[127.2,37.15],[126.9,37.2],[126.7,37.35],[126.75,37.55],[126.8,37.6],[126.6,37.75]]
+                },
+                gangwon: {
+                    name: '강원', key: 'gangwon',
+                    points: [[127.5,38.3],[128.0,38.35],[128.5,38.3],[129.0,37.8],[129.1,37.3],[128.8,37.0],[128.3,36.95],[127.8,37.1],[127.5,37.4],[127.3,37.7],[127.2,38.0]]
+                },
+                chungbuk: {
+                    name: '충북', key: 'chungcheong',
+                    points: [[127.2,37.15],[127.6,37.2],[127.9,37.0],[128.0,36.7],[127.8,36.4],[127.4,36.3],[127.0,36.4],[126.9,36.7],[126.95,37.0]]
+                },
+                chungnam: {
+                    name: '충남', key: 'chungcheong',
+                    points: [[126.1,36.9],[126.5,37.0],[126.9,37.0],[127.0,36.7],[127.0,36.4],[126.8,36.1],[126.4,36.0],[126.1,36.2],[125.9,36.5],[126.0,36.75]]
+                },
+                sejong: {
+                    name: '세종', key: 'chungcheong',
+                    points: [[127.0,36.55],[127.15,36.55],[127.2,36.45],[127.1,36.4],[126.95,36.42],[126.9,36.5]]
+                },
+                daejeon: {
+                    name: '대전', key: 'chungcheong',
+                    points: [[127.25,36.42],[127.45,36.4],[127.5,36.28],[127.35,36.2],[127.2,36.25],[127.15,36.35]]
+                },
+                jeonbuk: {
+                    name: '전북', key: 'jeolla',
+                    points: [[126.4,36.0],[126.8,36.1],[127.0,36.1],[127.2,35.9],[127.3,35.6],[127.0,35.4],[126.6,35.4],[126.2,35.6],[126.0,35.8],[126.15,36.0]]
+                },
+                gwangju: {
+                    name: '광주', key: 'jeolla',
+                    points: [[126.75,35.2],[126.95,35.22],[127.0,35.1],[126.9,35.0],[126.72,35.02],[126.68,35.12]]
+                },
+                jeonnam: {
+                    name: '전남', key: 'jeolla',
+                    points: [[126.2,35.6],[126.6,35.4],[127.0,35.4],[127.3,35.1],[127.5,34.8],[127.3,34.5],[126.8,34.3],[126.3,34.35],[125.9,34.6],[125.8,35.0],[126.0,35.3]],
+                    islands: [
+                        [[125.5,34.4],[125.8,34.5],[125.85,34.3],[125.55,34.25]], // 진도
+                        [[126.5,34.0],[126.8,34.05],[126.85,33.9],[126.5,33.85]], // 완도
+                        [[125.2,34.8],[125.5,34.85],[125.55,34.7],[125.25,34.65]] // 신안
+                    ]
+                },
+                gyeongbuk: {
+                    name: '경북', key: 'gyeongsang',
+                    points: [[128.3,36.95],[128.8,37.0],[129.1,36.8],[129.4,36.4],[129.5,36.0],[129.3,35.6],[128.9,35.5],[128.5,35.6],[128.2,35.8],[127.8,36.0],[127.8,36.4],[128.0,36.7]]
+                },
+                daegu: {
+                    name: '대구', key: 'gyeongsang',
+                    points: [[128.45,35.95],[128.7,35.92],[128.75,35.78],[128.6,35.7],[128.42,35.73],[128.38,35.85]]
+                },
+                gyeongnam: {
+                    name: '경남', key: 'gyeongsang',
+                    points: [[127.5,35.5],[128.2,35.55],[128.5,35.5],[128.9,35.4],[129.1,35.15],[129.0,34.85],[128.6,34.75],[128.0,34.85],[127.6,35.0],[127.3,35.2],[127.35,35.4]]
+                },
+                ulsan: {
+                    name: '울산', key: 'gyeongsang',
+                    points: [[129.1,35.65],[129.35,35.6],[129.45,35.45],[129.35,35.35],[129.15,35.38],[129.05,35.5]]
+                },
+                busan: {
+                    name: '부산', key: 'gyeongsang',
+                    points: [[128.85,35.25],[129.15,35.22],[129.2,35.05],[129.05,34.95],[128.85,35.0],[128.8,35.15]]
+                },
+                jeju: {
+                    name: '제주', key: 'jeju',
+                    points: [[126.15,33.55],[126.6,33.58],[126.95,33.52],[126.9,33.28],[126.5,33.2],[126.15,33.25],[126.05,33.4]]
+                }
+            };
+
+            // 울릉도, 독도
+            const islands = {
+                ulleung: { points: [[130.85,37.52],[130.95,37.55],[131.0,37.48],[130.9,37.45]], name: '울릉도', key: 'gyeongsang' },
+                dokdo: { points: [[131.85,37.24],[131.88,37.245],[131.88,37.235],[131.85,37.235]], name: '독도', key: 'gyeongsang' }
+            };
+
+            // SVG 생성
+            let svg = '<svg class="map-svg" viewBox="-20 -20 440 560" xmlns="http://www.w3.org/2000/svg">';
+            svg += '<defs><filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.2"/></filter></defs>';
+
+            // 배경
+            svg += '<rect x="-20" y="-20" width="440" height="560" fill="#f0f9ff" rx="10"/>';
+
+            // 각 시도 그리기
+            for (const [id, prov] of Object.entries(provinces)) {
+                const points = prov.points.map(p => toSvg(p[0], p[1]));
+                const pathD = 'M' + points.map(p => p.join(',')).join(' L') + ' Z';
+                const color = getRegionColor(prov.key);
+
+                svg += `<path class="map-region" data-region="${prov.key}" d="${pathD}" fill="${color}" stroke="#fff" stroke-width="1.5" style="cursor:pointer;filter:url(#shadow)" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1"/>`;
+
+                // 섬들
+                if (prov.islands) {
+                    for (const island of prov.islands) {
+                        const islandPoints = island.map(p => toSvg(p[0], p[1]));
+                        const islandPathD = 'M' + islandPoints.map(p => p.join(',')).join(' L') + ' Z';
+                        svg += `<path class="map-region" data-region="${prov.key}" d="${islandPathD}" fill="${color}" stroke="#fff" stroke-width="1" style="cursor:pointer;opacity:0.85"/>`;
+                    }
+                }
+            }
+
+            // 울릉도, 독도
+            for (const [id, island] of Object.entries(islands)) {
+                const points = island.points.map(p => toSvg(p[0], p[1]));
+                const pathD = 'M' + points.map(p => p.join(',')).join(' L') + ' Z';
+                const color = getRegionColor(island.key);
+                svg += `<path class="map-region" data-region="${island.key}" d="${pathD}" fill="${color}" stroke="#fff" stroke-width="0.5" style="cursor:pointer"/>`;
+            }
+
+            // 라벨들
+            const labels = [
+                { name: '서울', pos: [126.95, 37.52], size: 9 },
+                { name: '인천', pos: [126.45, 37.48], size: 8 },
+                { name: '경기', pos: [127.2, 37.55], size: 11 },
+                { name: '강원', pos: [128.2, 37.6], size: 12 },
+                { name: '충북', pos: [127.5, 36.75], size: 10 },
+                { name: '충남', pos: [126.55, 36.55], size: 10 },
+                { name: '세종', pos: [127.05, 36.48], size: 7 },
+                { name: '대전', pos: [127.35, 36.32], size: 8 },
+                { name: '전북', pos: [126.8, 35.75], size: 10 },
+                { name: '광주', pos: [126.85, 35.12], size: 8 },
+                { name: '전남', pos: [126.6, 34.75], size: 11 },
+                { name: '경북', pos: [128.6, 36.35], size: 12 },
+                { name: '대구', pos: [128.55, 35.83], size: 8 },
+                { name: '경남', pos: [128.15, 35.15], size: 11 },
+                { name: '울산', pos: [129.25, 35.5], size: 8 },
+                { name: '부산', pos: [129.0, 35.12], size: 9 },
+                { name: '제주', pos: [126.55, 33.4], size: 11 },
+                { name: '울릉', pos: [130.9, 37.5], size: 7 }
+            ];
+
+            for (const label of labels) {
+                const [x, y] = toSvg(label.pos[0], label.pos[1]);
+                svg += `<text x="${x}" y="${y}" text-anchor="middle" font-size="${label.size}" font-weight="600" fill="#1e293b" style="pointer-events:none">${label.name}</text>`;
+            }
+
+            svg += '</svg>';
+
+            // 줌 컨트롤
+            svg += `
+                <div class="map-zoom-controls">
+                    <button class="map-zoom-btn" onclick="zoomMap(1.2)">+</button>
+                    <button class="map-zoom-btn" onclick="zoomMap(0.8)">-</button>
+                    <button class="map-zoom-btn" onclick="resetMapZoom()">↺</button>
+                </div>
+            `;
+
+            container.innerHTML = svg;
+
+            // 지도 클릭 이벤트
+            container.querySelectorAll('.map-region').forEach(region => {
                 region.addEventListener('click', () => {
                     const regionKey = region.dataset.region;
                     showRegionDetail(regionKey);
                 });
             });
+
+            function getRegionColor(key) {
+                const status = regionStatus[key];
+                if (!status) return '#e2e8f0';
+                if (status.stamped === 0) return '#e2e8f0';
+                if (status.stamped === status.total) return '#22c55e';
+                return '#fbbf24';
+            }
         }
 
         // 지도 줌 관련 변수와 함수

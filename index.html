@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>전국 어린이박물관 스탬프 투어</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Gaegu:wght@300;400;700&display=swap');
+
+    :root {
+      --bg-cream: #FFF8F0;
+      --bg-paper: #FFFDF7;
+      --color-seoul: #E74C3C;
+      --color-gyeonggi: #E67E22;
+      --color-chungcheong: #2ECC71;
+      --color-jeolla: #3498DB;
+      --color-gyeongsang: #9B59B6;
+      --color-gangwon: #1ABC9C;
+      --color-jeju: #F39C12;
+      --stamp-unvisited: #D5D0C8;
+      --text-dark: #2C2C2C;
+      --text-muted: #8C8680;
+      --shadow-soft: 0 2px 12px rgba(0,0,0,0.08);
+      --shadow-stamp: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg-cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: linear-gradient(135deg, #2C3E50 0%, #34495E 50%, #2C3E50 100%);
+      color: white;
+      padding: 40px 20px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(231,76,60,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(52,152,219,0.15) 0%, transparent 50%);
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 15px;
+      opacity: 0.8;
+      font-weight: 300;
+    }
+
+    /* ===== STATS BAR ===== */
+    .stats-bar {
+      background: white;
+      max-width: 900px;
+      margin: -25px auto 30px;
+      border-radius: 16px;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      z-index: 2;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--color-seoul);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 300px;
+      min-width: 200px;
+      padding: 0 20px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #EDE9E3;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-seoul), var(--color-gyeonggi), var(--color-chungcheong), var(--color-jeolla));
+      border-radius: 5px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    .progress-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* ===== REGION SECTION ===== */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    .region-section {
+      margin-bottom: 40px;
+    }
+
+    .region-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #EDE9E3;
+    }
+
+    .region-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .region-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .region-count {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* ===== STAMP GRID ===== */
+    .stamp-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    /* ===== STAMP CARD ===== */
+    .stamp-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px 16px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .stamp-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-stamp);
+    }
+
+    .stamp-card:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+
+    /* Stamp circle */
+    .stamp-circle {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .stamp-card.unvisited .stamp-circle {
+      background: #F5F2ED;
+      border: 3px dashed var(--stamp-unvisited);
+    }
+
+    .stamp-card.visited .stamp-circle {
+      border: 4px solid currentColor;
+      background: white;
+    }
+
+    /* Stamp inner design */
+    .stamp-inner {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .stamp-card.unvisited .stamp-inner {
+      opacity: 0.3;
+    }
+
+    .stamp-card.visited .stamp-inner {
+      opacity: 1;
+    }
+
+    .stamp-icon {
+      font-size: 36px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stamp-number {
+      font-family: 'Gaegu', cursive;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Rubber stamp overlay for visited */
+    .stamp-card.visited .stamp-circle::after {
+      content: '';
+      position: absolute;
+      top: -4px; left: -4px; right: -4px; bottom: -4px;
+      border-radius: 50%;
+      border: 4px double currentColor;
+      opacity: 0.3;
+      transform: rotate(var(--rotation, -5deg));
+    }
+
+    /* Stamp text */
+    .stamp-name {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      color: var(--text-dark);
+    }
+
+    .stamp-location {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* Visit date badge */
+    .visit-date {
+      display: none;
+      font-size: 10px;
+      color: white;
+      background: var(--text-dark);
+      padding: 3px 10px;
+      border-radius: 10px;
+      margin-top: 8px;
+      font-weight: 500;
+    }
+
+    .stamp-card.visited .visit-date {
+      display: inline-block;
+    }
+
+    /* Unvisited hint */
+    .tap-hint {
+      font-size: 10px;
+      color: var(--stamp-unvisited);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .stamp-card.visited .tap-hint {
+      display: none;
+    }
+
+    /* ===== REGION COLORS ===== */
+    .stamp-card.visited[data-region="seoul"] { color: var(--color-seoul); }
+    .stamp-card.visited[data-region="gyeonggi"] { color: var(--color-gyeonggi); }
+    .stamp-card.visited[data-region="chungcheong"] { color: var(--color-chungcheong); }
+    .stamp-card.visited[data-region="jeolla"] { color: var(--color-jeolla); }
+    .stamp-card.visited[data-region="gyeongsang"] { color: var(--color-gyeongsang); }
+    .stamp-card.visited[data-region="gangwon"] { color: var(--color-gangwon); }
+    .stamp-card.visited[data-region="jeju"] { color: var(--color-jeju); }
+
+    /* ===== NOTION BADGE ===== */
+    .notion-badge {
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 20px;
+    }
+
+    .notion-badge a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      color: var(--text-dark);
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+    }
+
+    .notion-badge a:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-stamp);
+    }
+
+    .notion-logo {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid #EDE9E3;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ===== STAMP ANIMATION ===== */
+    @keyframes stampDown {
+      0% { transform: scale(1.3) rotate(-10deg); opacity: 0; }
+      50% { transform: scale(0.95) rotate(2deg); opacity: 1; }
+      100% { transform: scale(1) rotate(var(--rotation, -5deg)); opacity: 1; }
+    }
+
+    .stamp-card.just-stamped .stamp-circle {
+      animation: stampDown 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) forwards;
+    }
+
+    @keyframes confettiBurst {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(2.5); opacity: 0; }
+    }
+
+    .confetti-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 120px; height: 120px;
+      margin: -60px 0 0 -60px;
+      border-radius: 50%;
+      border: 3px solid currentColor;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .stamp-card.just-stamped .confetti-ring {
+      animation: confettiBurst 0.6s ease-out forwards;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .header h1 { font-size: 24px; }
+      .header-icon { font-size: 36px; }
+      .stamp-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .stamp-circle { width: 90px; height: 90px; }
+      .stamp-inner { width: 74px; height: 74px; }
+      .stamp-icon { font-size: 28px; }
+      .stamp-card { padding: 16px 10px 14px; }
+      .stats-bar { padding: 16px; }
+      .stat-number { font-size: 22px; }
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .modal-btn.primary {
+      background: var(--color-seoul);
+      color: white;
+    }
+
+    .modal-btn.secondary {
+      background: #F0EDEA;
+      color: var(--text-dark);
+    }
+
+    .modal-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-content">
+      <span class="header-icon" aria-hidden="true">&#x1F3DB;</span>
+      <h1>전국 어린이박물관 스탬프 투어</h1>
+      <p>전국 20개 어린이박물관을 방문하고 스탬프를 모아보세요!</p>
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-number" id="visitCount">0</div>
+      <div class="stat-label">방문 완료</div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">0 / 20 완료</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" id="remainCount">20</div>
+      <div class="stat-label">남은 박물관</div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="container">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-seoul)"></div>서울</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-gyeonggi)"></div>경기</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-chungcheong)"></div>충청</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-jeolla)"></div>전라</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-gyeongsang)"></div>경상</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-gangwon)"></div>강원</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--color-jeju)"></div>제주</div>
+    </div>
+
+    <div id="museumContainer"></div>
+
+    <!-- NOTION BADGE -->
+    <div class="notion-badge">
+      <a href="#" id="notionLink">
+        <svg class="notion-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6.017 4.313l55.333-4.087c6.797-.583 8.543-.19 12.817 2.917l17.663 12.443c2.913 2.14 3.883 2.723 3.883 5.053v68.243c0 4.277-1.553 6.807-6.99 7.193L24.467 99.967c-4.08.193-6.023-.39-8.16-3.113L3.3 79.94c-2.333-3.113-3.3-5.443-3.3-8.167V11.113c0-3.497 1.553-6.413 6.017-6.8z" fill="#fff"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M61.35.227l-55.333 4.087C1.553 4.7 0 7.617 0 11.113v60.66c0 2.723.967 5.053 3.3 8.167l13.007 16.913c2.137 2.723 4.08 3.307 8.16 3.113l64.257-3.89c5.433-.387 6.99-2.917 6.99-7.193V20.64c0-2.21-.873-2.847-3.443-4.733L75.5 3.36C71.233.253 69.487-.133 62.69.447L61.35.227z" fill="#000"/>
+          <path d="M25.723 19.043c-5.243.353-6.453.433-9.47-1.99L8.927 11.14c-.777-.583-1.17-1.363-.39-1.457l54.723-3.887c4.663-.387 7.03 1.553 8.743 2.917l8.46 6.223c.39.193.97 1.357.193 1.357l-55.54 2.75h.607z" fill="#fff"/>
+          <path d="M19.457 88.543V32.117c0-2.53.777-3.697 3.103-3.893L86 25.047c2.14-.193 3.107 1.167 3.107 3.693v56.03c0 2.527-.39 4.667-3.883 4.86l-60.377 3.5c-3.493.193-5.39-.97-5.39-4.587z" fill="#fff"/>
+          <path d="M67.907 39.637c.39 1.747 0 3.497-1.75 3.693l-2.527.387v41.537c-2.14 1.167-4.277 1.75-5.833 1.75-2.723 0-3.5-.97-5.443-3.5L35.823 56.93v24.89l5.25 1.167s0 3.497-4.857 3.497l-13.397.777c-.39-.777 0-2.723 1.357-3.11l3.497-.97V49.867l-4.857-.39c-.39-1.75.583-4.277 3.3-4.47l14.357-.97 17.86 27.22V49.09l-4.47-.39c-.39-2.14 1.167-3.693 3.103-3.887l13.34-.777v-4.4z" fill="#000"/>
+        </svg>
+        Notion 데이터베이스 연동
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    데이터 출처: 국립중앙박물관, 문화체육관광부 | Notion DB 연동
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h3 id="modalTitle"></h3>
+      <p id="modalDesc"></p>
+      <div class="modal-buttons">
+        <button class="modal-btn secondary" onclick="closeModal()">취소</button>
+        <button class="modal-btn primary" id="modalConfirm">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== MUSEUM DATA =====
+    const museums = [
+      // 서울
+      { id: 1, name: '국립중앙박물관\n어린이박물관', shortName: '국립중앙', location: '서울 용산', region: 'seoul', icon: '&#x1F3DB;', visited: false, date: null },
+      { id: 2, name: '국립민속박물관\n어린이박물관', shortName: '국립민속', location: '서울 종로', region: 'seoul', icon: '&#x1F3EE;', visited: false, date: null },
+      { id: 3, name: '서울역사\n어린이박물관', shortName: '서울역사', location: '서울 종로', region: 'seoul', icon: '&#x1F3F0;', visited: false, date: null },
+
+      // 경기
+      { id: 4, name: '경기도\n어린이박물관', shortName: '경기도', location: '경기 용인', region: 'gyeonggi', icon: '&#x1F333;', visited: false, date: null },
+      { id: 5, name: '경기북부\n어린이박물관', shortName: '경기북부', location: '경기 동두천', region: 'gyeonggi', icon: '&#x26F0;', visited: false, date: null },
+      { id: 6, name: '국립어린이\n민속박물관', shortName: '어린이민속', location: '경기 파주', region: 'gyeonggi', icon: '&#x1F3AD;', visited: false, date: null },
+
+      // 충청
+      { id: 7, name: '국립어린이박물관\n(박물관단지)', shortName: '국립어린이', location: '세종', region: 'chungcheong', icon: '&#x1F30D;', visited: false, date: null },
+      { id: 8, name: '국립공주박물관\n어린이박물관', shortName: '공주', location: '충남 공주', region: 'chungcheong', icon: '&#x1F451;', visited: false, date: null },
+      { id: 9, name: '국립부여박물관\n어린이박물관', shortName: '부여', location: '충남 부여', region: 'chungcheong', icon: '&#x1F3FA;', visited: false, date: null },
+      { id: 10, name: '국립청주박물관\n어린이박물관', shortName: '청주', location: '충북 청주', region: 'chungcheong', icon: '&#x1F4DC;', visited: false, date: null },
+
+      // 전라
+      { id: 11, name: '국립전주박물관\n어린이박물관', shortName: '전주', location: '전북 전주', region: 'jeolla', icon: '&#x1F3E1;', visited: false, date: null },
+      { id: 12, name: '국립익산박물관\n어린이박물관', shortName: '익산', location: '전북 익산', region: 'jeolla', icon: '&#x1F54D;', visited: false, date: null },
+      { id: 13, name: '국립광주박물관\n어린이박물관', shortName: '광주', location: '광주', region: 'jeolla', icon: '&#x2600;', visited: false, date: null },
+      { id: 14, name: '국립나주박물관\n어린이박물관', shortName: '나주', location: '전남 나주', region: 'jeolla', icon: '&#x1F33E;', visited: false, date: null },
+
+      // 경상
+      { id: 15, name: '국립대구박물관\n어린이박물관', shortName: '대구', location: '대구', region: 'gyeongsang', icon: '&#x1F338;', visited: false, date: null },
+      { id: 16, name: '국립경주박물관\n어린이박물관', shortName: '경주', location: '경북 경주', region: 'gyeongsang', icon: '&#x1F3AF;', visited: false, date: null },
+      { id: 17, name: '국립김해박물관\n어린이박물관', shortName: '김해', location: '경남 김해', region: 'gyeongsang', icon: '&#x2693;', visited: false, date: null },
+      { id: 18, name: '국립진주박물관\n어린이박물관', shortName: '진주', location: '경남 진주', region: 'gyeongsang', icon: '&#x1F3EF;', visited: false, date: null },
+
+      // 강원
+      { id: 19, name: '국립춘천박물관\n어린이박물관', shortName: '춘천', location: '강원 춘천', region: 'gangwon', icon: '&#x1F3D4;', visited: false, date: null },
+
+      // 제주
+      { id: 20, name: '국립제주박물관\n어린이박물관', shortName: '제주', location: '제주', region: 'jeju', icon: '&#x1F30A;', visited: false, date: null },
+    ];
+
+    const regionInfo = {
+      seoul:        { title: '서울', color: 'var(--color-seoul)' },
+      gyeonggi:     { title: '경기', color: 'var(--color-gyeonggi)' },
+      chungcheong:  { title: '충청', color: 'var(--color-chungcheong)' },
+      jeolla:       { title: '전라', color: 'var(--color-jeolla)' },
+      gyeongsang:   { title: '경상', color: 'var(--color-gyeongsang)' },
+      gangwon:      { title: '강원', color: 'var(--color-gangwon)' },
+      jeju:         { title: '제주', color: 'var(--color-jeju)' },
+    };
+
+    const regionOrder = ['seoul', 'gyeonggi', 'chungcheong', 'jeolla', 'gyeongsang', 'gangwon', 'jeju'];
+
+    // ===== RENDER =====
+    function render() {
+      const container = document.getElementById('museumContainer');
+      container.innerHTML = '';
+
+      regionOrder.forEach(regionKey => {
+        const regionMuseums = museums.filter(m => m.region === regionKey);
+        if (regionMuseums.length === 0) return;
+
+        const info = regionInfo[regionKey];
+        const visitedCount = regionMuseums.filter(m => m.visited).length;
+
+        const section = document.createElement('div');
+        section.className = 'region-section';
+        section.innerHTML = `
+          <div class="region-header">
+            <div class="region-dot" style="background: ${info.color}"></div>
+            <div class="region-title">${info.title}</div>
+            <div class="region-count">${visitedCount} / ${regionMuseums.length}</div>
+          </div>
+          <div class="stamp-grid" id="grid-${regionKey}"></div>
+        `;
+        container.appendChild(section);
+
+        const grid = section.querySelector('.stamp-grid');
+
+        regionMuseums.forEach(museum => {
+          const rotation = (Math.random() * 10 - 5).toFixed(1);
+          const card = document.createElement('div');
+          card.className = `stamp-card ${museum.visited ? 'visited' : 'unvisited'}`;
+          card.dataset.region = museum.region;
+          card.dataset.id = museum.id;
+          card.style.setProperty('--rotation', `${rotation}deg`);
+
+          const nameLines = museum.name.split('\n');
+
+          card.innerHTML = `
+            <div class="stamp-circle">
+              <div class="stamp-inner">
+                <div class="stamp-icon">${museum.icon}</div>
+                <div class="stamp-number">NO.${String(museum.id).padStart(2, '0')}</div>
+              </div>
+              <div class="confetti-ring"></div>
+            </div>
+            <div class="stamp-name">${nameLines.join('<br>')}</div>
+            <div class="stamp-location">${museum.location}</div>
+            <div class="visit-date">${museum.date || ''}</div>
+            <div class="tap-hint">탭하여 방문 기록</div>
+          `;
+
+          card.addEventListener('click', () => handleStampClick(museum));
+          grid.appendChild(card);
+        });
+      });
+
+      updateStats();
+    }
+
+    // ===== STATS =====
+    function updateStats() {
+      const visited = museums.filter(m => m.visited).length;
+      const total = museums.length;
+
+      document.getElementById('visitCount').textContent = visited;
+      document.getElementById('remainCount').textContent = total - visited;
+      document.getElementById('progressFill').style.width = `${(visited / total) * 100}%`;
+      document.getElementById('progressText').textContent = `${visited} / ${total} 완료`;
+    }
+
+    // ===== STAMP CLICK =====
+    let pendingMuseum = null;
+
+    function handleStampClick(museum) {
+      pendingMuseum = museum;
+
+      if (museum.visited) {
+        showModal(
+          `${museum.shortName} 방문 취소`,
+          '방문 기록을 취소하시겠습니까?',
+          () => {
+            museum.visited = false;
+            museum.date = null;
+            saveData();
+            render();
+            closeModal();
+          }
+        );
+      } else {
+        const today = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        showModal(
+          `${museum.shortName} 방문 완료!`,
+          `오늘 (${today}) 방문하셨나요?`,
+          () => {
+            museum.visited = true;
+            museum.date = today;
+            saveData();
+            render();
+
+            // Trigger stamp animation
+            setTimeout(() => {
+              const card = document.querySelector(`.stamp-card[data-id="${museum.id}"]`);
+              if (card) {
+                card.classList.add('just-stamped');
+                setTimeout(() => card.classList.remove('just-stamped'), 800);
+              }
+            }, 50);
+
+            closeModal();
+          }
+        );
+      }
+    }
+
+    // ===== MODAL =====
+    function showModal(title, desc, onConfirm) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalDesc').textContent = desc;
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('modalConfirm').onclick = onConfirm;
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+      pendingMuseum = null;
+    }
+
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+
+    // ===== LOCAL STORAGE =====
+    function saveData() {
+      const data = museums.map(m => ({ id: m.id, visited: m.visited, date: m.date }));
+      localStorage.setItem('museum-stamps', JSON.stringify(data));
+    }
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem('museum-stamps');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        data.forEach(d => {
+          const museum = museums.find(m => m.id === d.id);
+          if (museum) {
+            museum.visited = d.visited;
+            museum.date = d.date;
+          }
+        });
+      } catch (e) {
+        console.warn('Failed to load stamp data:', e);
+      }
+    }
+
+    // ===== INIT =====
+    loadData();
+    render();
+  </script>
+</body>
+</html>

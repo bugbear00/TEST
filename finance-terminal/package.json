@@ -1,0 +1,22 @@
+{
+  "name": "korean-finance-terminal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "미국 주식 투자자를 위한 한국어 기반 금융 터미널 (미국/한국 주식, ETF, 지수, 금리, 원자재, 환율, 뉴스, SEC/DART 공시)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "serve": "node dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

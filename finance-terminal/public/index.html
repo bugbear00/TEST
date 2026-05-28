@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>한국어 금융 터미널 · 미국주식 중심</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">▮▮</span>
+        <div>
+          <h1>한국어 금융 터미널</h1>
+          <p class="tagline">미국 주식 · ETF · 지수 · 금리 · 원자재 · 환율 · 뉴스 · SEC/DART 공시</p>
+        </div>
+      </div>
+      <div class="search">
+        <input id="search-input" type="text" placeholder="종목 검색 (예: AAPL, TSLA, 005930.KS, ^GSPC)" autocomplete="off" />
+        <button id="search-btn">검색</button>
+      </div>
+    </header>
+
+    <div class="legend" id="legend">
+      <span class="legend-title">상태 표기:</span>
+      <span class="badge live">실시간</span>
+      <span class="badge delayed">지연</span>
+      <span class="badge no_data">데이터 없음</span>
+      <span class="badge api_required">API 키 필요</span>
+      <span class="badge error">오류</span>
+      <span class="legend-note">데이터가 없으면 임의의 숫자로 채우지 않고 위 상태로 명확히 표시합니다.</span>
+    </div>
+
+    <main>
+      <!-- 시장 개요 대시보드 -->
+      <section id="markets" class="panel">
+        <div class="panel-head">
+          <h2>시장 개요</h2>
+          <button class="refresh" data-refresh="markets" title="새로고침">⟳</button>
+        </div>
+        <div id="markets-body" class="markets-grid">
+          <p class="loading">불러오는 중…</p>
+        </div>
+      </section>
+
+      <div class="two-col">
+        <!-- 금리 -->
+        <section id="rates" class="panel">
+          <div class="panel-head">
+            <h2>금리 / 거시</h2>
+            <span class="meta-badge" id="rates-badge"></span>
+          </div>
+          <div id="rates-body"><p class="loading">불러오는 중…</p></div>
+        </section>
+
+        <!-- DART -->
+        <section id="dart" class="panel">
+          <div class="panel-head">
+            <h2>한국 공시 (DART)</h2>
+            <span class="meta-badge" id="dart-badge"></span>
+          </div>
+          <div id="dart-body"><p class="loading">불러오는 중…</p></div>
+        </section>
+      </div>
+
+      <!-- 데이터 소스 상태 -->
+      <section id="providers" class="panel">
+        <div class="panel-head"><h2>데이터 소스 상태 / 필요한 API</h2></div>
+        <div id="providers-body"><p class="loading">불러오는 중…</p></div>
+      </section>
+    </main>
+
+    <!-- 종목 상세 모달 -->
+    <div id="detail" class="detail hidden">
+      <div class="detail-inner">
+        <button id="detail-close" class="detail-close">✕</button>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+
+    <footer>
+      <p>
+        본 터미널은 정보 제공용이며 투자 권유가 아닙니다. 시세는 출처·종목에 따라 실시간이 아닐 수 있습니다.
+        데이터 출처: Yahoo Finance, SEC EDGAR, FRED, OpenDART, Finnhub.
+      </p>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

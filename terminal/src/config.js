@@ -5,9 +5,17 @@ export const KEYS = {
   FRED: process.env.FRED_API_KEY || null, // 금리 (미 국채 수익률 등)
   FINNHUB: process.env.FINNHUB_API_KEY || null, // 뉴스, 실적 캘린더
   DART: process.env.DART_API_KEY || null, // 한국 전자공시 (opendart.fss.or.kr)
+  KRX: process.env.KRX_API_KEY || null, // KRX 공식 시장데이터 open API (data.krx.co.kr)
   POLYGON: process.env.POLYGON_API_KEY || null, // 옵션 체인(선택)
   ALPHAVANTAGE: process.env.ALPHAVANTAGE_API_KEY || null, // 보조 시세(선택)
 };
+
+// 한국 주요 지수 (네이버 실시간 폴링 코드)
+export const DEFAULT_KR_INDICES = [
+  { code: "KOSPI", name: "코스피" },
+  { code: "KOSDAQ", name: "코스닥" },
+  { code: "KPI200", name: "코스피200" },
+];
 
 // 비로그인 사용자도 볼 수 있는 "일반 시장" 기본 구성.
 // 모두 키가 필요 없는 Stooq(지연) 로 제공된다.

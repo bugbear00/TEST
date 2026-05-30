@@ -30,8 +30,10 @@ npm start                 # http://localhost:3000
 | 미국 공시 (10-K/10-Q/8-K) | **SEC EDGAR** | 불필요 (User-Agent 권장) | `CONTACT_USER_AGENT` | — |
 | 미국 금리 / 국채 수익률 | **FRED** | 필요 | `FRED_API_KEY` | https://fredaccount.stlouisfed.org/apikeys |
 | 종목 뉴스 · 실적 캘린더 | **Finnhub** | 필요 (무료 티어) | `FINNHUB_API_KEY` | https://finnhub.io/register |
-| **한국 주식 시세 (KOSPI/KOSDAQ, 근실시간)** | **네이버 금융** | 불필요 | — | — |
+| **한국 주식·지수 (KOSPI/KOSDAQ, 근실시간)** | **네이버 금융** | 불필요 | — | — |
+| 종목 뉴스 (키 없을 때 폴백) | **Yahoo Finance RSS** | 불필요 | — | — |
 | 한국 전자공시 | **DART** | 필요 | `DART_API_KEY` | https://opendart.fss.or.kr/ |
+| 한국거래소 공식 일별 확정 시세 | **KRX Open API** | 필요 | `KRX_API_KEY` | https://data.krx.co.kr/ |
 | 옵션 체인 (선택) | **Polygon.io** | 필요 | `POLYGON_API_KEY` | https://polygon.io/ |
 | 보조 시세 (선택) | **Alpha Vantage** | 필요 | `ALPHAVANTAGE_API_KEY` | https://www.alphavantage.co/ |
 
@@ -114,6 +116,8 @@ Node 18+ 환경에서 `npm install && node src/server.js` 만으로 실행됩니
 | GET | `/api/earnings?ticker=AAPL` | 실적 캘린더 (Finnhub 키) |
 | GET | `/api/options?ticker=AAPL` | 옵션 체인 (Polygon 키) |
 | GET | `/api/korea/quote?code=005930` | 한국 주식 시세 (네이버 1차, Stooq 폴백) |
+| GET | `/api/korea/indices` | 코스피·코스닥·코스피200 (네이버 근실시간) |
+| GET | `/api/korea/krx?market=KOSPI&code=005930` | KRX 공식 일별 확정 시세 (KRX 키) |
 | GET | `/api/korea/dart?corp_code=...` | DART 공시 (DART 키) |
 | GET | `/api/sources` | 소스/키 설정 상태 |
 | GET | `/api/health` | 헬스체크 |

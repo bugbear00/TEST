@@ -185,11 +185,47 @@ function renderFilings(env) {
 }
 
 // --- 한국 ---
+async function loadKoreaIndices() {
+  setBody("panel-krindices", '<span class="muted">불러오는 중…</span>');
+  const e = await api("/korea/indices");
+  setBody("panel-krindices", renderQuoteTable(e, { firstCol: "지수" }));
+}
+
 async function loadKoreaQuote(code) {
   if (!code) return;
   setBody("panel-krquote", '<span class="muted">불러오는 중…</span>');
+  setBody("panel-krx", "");
   const e = await api(`/korea/quote?code=${encodeURIComponent(code)}`);
   setBody("panel-krquote", renderQuoteTable(e, { firstCol: "종목" }));
+}
+
+async function loadKrx(code) {
+  if (!code) return;
+  setBody("panel-krx", '<span class="muted">KRX 공식 확정값 불러오는 중…</span>');
+  // 코스피 우선 조회, 데이터 없으면 코스닥 재시도
+  let e = await api(`/korea/krx?market=KOSPI&code=${encodeURIComponent(code)}`);
+  if (e.status === "no_data") {
+    const k = await api(`/korea/krx?market=KOSDAQ&code=${encodeURIComponent(code)}`);
+    if (k.status === "ok") e = k;
+  }
+  setBody("panel-krx", renderKrx(e));
+}
+
+function renderKrx(env) {
+  const header = `<div style="margin:8px 0">KRX 공식 확정값 ${badge(env.status, env.statusLabel)}</div>`;
+  const items = env.data?.items;
+  if (!items || items.length === 0) return header + notice(env) + sourceLine(env);
+  const rows = items
+    .map(
+      (r) => `<tr><td>${r.name || r.isuCd}</td>
+      <td class="num">${fmtNum(r.close, 0)}</td>
+      <td class="num">${fmtChange(r.change)}</td>
+      <td class="num">${fmtPct(r.changePct)}</td>
+      <td class="num muted">${r.volume != null ? fmtNum(r.volume, 0) : "—"}</td></tr>`
+    )
+    .join("");
+  return `${header}<div class="notice">기준일 ${env.data.baseDate} · ${env.data.market}</div>
+    <table><thead><tr><th>종목</th><th>종가</th><th>대비</th><th>등락률</th><th>거래량</th></tr></thead><tbody>${rows}</tbody></table>${sourceLine(env)}`;
 }
 
 async function loadDart(corp) {
@@ -244,6 +280,7 @@ function switchView(view) {
   document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.view === view));
   document.querySelectorAll(".view").forEach((v) => v.classList.toggle("active", v.dataset.view === view));
   if (view === "market") loadMarket();
+  if (view === "korea") loadKoreaIndices();
   if (view === "sources") loadSources();
 }
 
@@ -270,6 +307,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("krQuoteBtn").addEventListener("click", () =>
     loadKoreaQuote(document.getElementById("krCode").value.trim())
+  );
+  document.getElementById("krxBtn").addEventListener("click", () =>
+    loadKrx(document.getElementById("krCode").value.trim())
   );
   document.getElementById("dartBtn").addEventListener("click", () =>
     loadDart(document.getElementById("dartCorp").value.trim())

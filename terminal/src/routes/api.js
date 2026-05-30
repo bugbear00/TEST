@@ -2,15 +2,18 @@
 import { Router } from "express";
 import * as stooq from "../providers/stooq.js";
 import * as naver from "../providers/naver.js";
+import * as krx from "../providers/krx.js";
 import * as sec from "../providers/sec.js";
 import * as fred from "../providers/fred.js";
 import * as finnhub from "../providers/finnhub.js";
+import * as marketnews from "../providers/marketnews.js";
 import * as dart from "../providers/dart.js";
 import * as options from "../providers/options.js";
 import {
   DEFAULT_INDICES,
   DEFAULT_COMMODITIES,
   DEFAULT_FOREX,
+  DEFAULT_KR_INDICES,
   KEYS,
 } from "../config.js";
 import { ok } from "../lib/respond.js";
@@ -70,8 +73,15 @@ api.get("/sec/search", async (req, res) => {
   res.json(await sec.fullTextSearch(String(req.query.q || "")));
 });
 
+// 뉴스: Finnhub 키가 있으면 우선, 없거나 실패하면 키 불필요 RSS 로 폴백.
 api.get("/news", async (req, res) => {
-  res.json(await finnhub.companyNews(String(req.query.ticker || "")));
+  const ticker = String(req.query.ticker || "");
+  const primary = await finnhub.companyNews(ticker);
+  if (primary.status === "ok") return res.json(primary);
+  const rss = await marketnews.rssNews(ticker);
+  if (rss.status === "ok" || rss.status === "delayed") return res.json(rss);
+  // 둘 다 데이터 없음/차단 → Finnhub 가 api_required 였다면 RSS 사유가 더 유용
+  res.json(primary.status === "api_required" ? rss : primary);
 });
 
 api.get("/earnings", async (req, res) => {
@@ -105,6 +115,23 @@ api.get("/korea/quote", async (req, res) => {
   res.json(primary);
 });
 
+// 한국 주요 지수 (코스피/코스닥/코스피200) - 네이버 근실시간
+api.get("/korea/indices", async (_req, res) => {
+  res.json(await naver.indices(DEFAULT_KR_INDICES));
+});
+
+// KRX 공식 일별 확정 시세 (선택적 종목 필터)
+// /api/korea/krx?market=KOSPI&code=005930&basDd=20240105
+api.get("/korea/krx", async (req, res) => {
+  res.json(
+    await krx.dailyTrade({
+      market: req.query.market ? String(req.query.market).toUpperCase() : undefined,
+      basDd: req.query.basDd ? String(req.query.basDd) : undefined,
+      code: req.query.code ? String(req.query.code) : undefined,
+    })
+  );
+});
+
 api.get("/korea/dart", async (req, res) => {
   res.json(
     await dart.disclosureList({
@@ -123,12 +150,14 @@ api.get("/sources", (_req, res) => {
         noKeyRequired: [
           { name: "Stooq", use: "미국/글로벌 시세·지수·원자재·환율(지연)", status: "사용 가능" },
           { name: "SEC EDGAR", use: "미국 공시(10-K/10-Q/8-K)", status: "사용 가능 (User-Agent 권장)" },
-          { name: "네이버 금융", use: "한국 주식(KOSPI/KOSDAQ) 근실시간 시세", status: "사용 가능" },
+          { name: "네이버 금융", use: "한국 주식·지수(KOSPI/KOSDAQ) 근실시간", status: "사용 가능" },
+          { name: "Yahoo Finance RSS", use: "종목 뉴스(키 없을 때 폴백)", status: "사용 가능" },
         ],
         keyRequired: [
           { name: "FRED", env: "FRED_API_KEY", use: "미국 금리/국채 수익률", configured: !!KEYS.FRED },
-          { name: "Finnhub", env: "FINNHUB_API_KEY", use: "종목 뉴스·실적 캘린더", configured: !!KEYS.FINNHUB },
+          { name: "Finnhub", env: "FINNHUB_API_KEY", use: "종목 뉴스(고품질)·실적 캘린더", configured: !!KEYS.FINNHUB },
           { name: "DART", env: "DART_API_KEY", use: "한국 전자공시", configured: !!KEYS.DART },
+          { name: "KRX", env: "KRX_API_KEY", use: "한국거래소 공식 일별 확정 시세", configured: !!KEYS.KRX },
           { name: "Polygon", env: "POLYGON_API_KEY", use: "옵션 체인(선택)", configured: !!KEYS.POLYGON },
           { name: "Alpha Vantage", env: "ALPHAVANTAGE_API_KEY", use: "보조 시세(선택)", configured: !!KEYS.ALPHAVANTAGE },
         ],

@@ -64,12 +64,18 @@
     <!-- 한국 / DART -->
     <section class="view" data-view="korea">
       <div class="panel">
+        <h2>한국 주요 지수 <span class="hint">네이버 금융 근실시간</span></h2>
+        <div class="panel-body" id="panel-krindices">불러오는 중…</div>
+      </div>
+      <div class="panel">
         <h2>한국 주식 시세 <span class="hint">네이버 금융(KRX) 근실시간 · 실패 시 Stooq 폴백</span></h2>
         <div class="kr-controls">
           <input id="krCode" type="text" placeholder="종목코드 6자리 (예: 005930)" />
           <button id="krQuoteBtn">시세 조회</button>
+          <button id="krxBtn" style="background:#2a3344;color:#d7dee9">KRX 공식 확정값</button>
         </div>
         <div class="panel-body" id="panel-krquote">종목코드를 입력하세요.</div>
+        <div class="panel-body" id="panel-krx" style="border-top:1px solid var(--border)"></div>
       </div>
       <div class="panel">
         <h2>DART 전자공시</h2>

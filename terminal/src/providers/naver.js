@@ -127,3 +127,44 @@ export async function quote(code) {
     return errored(SOURCE, err?.message || "조회 실패");
   }
 }
+
+const INDEX_SOURCE = "네이버 금융 (KRX 지수, 근실시간)";
+
+function buildIndex(code, name, d) {
+  const q = buildQuote(code, d);
+  q.name = name || q.name || code;
+  q.currency = "P"; // 지수 포인트
+  delete q.volume; // 지수는 거래량 표기 생략
+  return q;
+}
+
+/**
+ * 한국 주요 지수 일괄 조회.
+ * @param {{code:string,name:string}[]} defs
+ */
+export async function indices(defs) {
+  try {
+    const out = [];
+    for (const def of defs) {
+      const url = `https://polling.finance.naver.com/api/realtime/domestic/index/${def.code}`;
+      let d = null;
+      try {
+        const json = await fetchJson(url, { headers: NAVER_HEADERS });
+        d = Array.isArray(json?.datas) ? json.datas[0] : null;
+      } catch (e) {
+        if (e instanceof FetchError && e.kind === "blocked") throw e;
+      }
+      out.push(
+        d ? buildIndex(def.code, def.name, d) : { symbol: def.code, name: def.name, available: false }
+      );
+    }
+    const any = out.some((o) => o.available);
+    if (!any) return noData(INDEX_SOURCE, "지수 데이터를 가져오지 못했습니다.");
+    return delayed(out, INDEX_SOURCE);
+  } catch (err) {
+    if (err instanceof FetchError && err.kind === "blocked") {
+      return blocked(INDEX_SOURCE, err.message);
+    }
+    return errored(INDEX_SOURCE, err?.message || "조회 실패");
+  }
+}

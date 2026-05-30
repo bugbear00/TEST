@@ -30,13 +30,16 @@ npm start                 # http://localhost:3000
 | 미국 공시 (10-K/10-Q/8-K) | **SEC EDGAR** | 불필요 (User-Agent 권장) | `CONTACT_USER_AGENT` | — |
 | 미국 금리 / 국채 수익률 | **FRED** | 필요 | `FRED_API_KEY` | https://fredaccount.stlouisfed.org/apikeys |
 | 종목 뉴스 · 실적 캘린더 | **Finnhub** | 필요 (무료 티어) | `FINNHUB_API_KEY` | https://finnhub.io/register |
+| **한국 주식 시세 (KOSPI/KOSDAQ, 근실시간)** | **네이버 금융** | 불필요 | — | — |
 | 한국 전자공시 | **DART** | 필요 | `DART_API_KEY` | https://opendart.fss.or.kr/ |
 | 옵션 체인 (선택) | **Polygon.io** | 필요 | `POLYGON_API_KEY` | https://polygon.io/ |
 | 보조 시세 (선택) | **Alpha Vantage** | 필요 | `ALPHAVANTAGE_API_KEY` | https://www.alphavantage.co/ |
 
-> **한국 주식 시세 주의:** 무료 소스(Stooq)는 KRX 커버리지가 제한적입니다. 정확한 한국 실시간
-> 시세가 필요하면 KRX/네이버 등 별도 유료/공식 소스 연동이 필요하며, 현재는 데이터가 없으면
-> "데이터 없음"으로 표시합니다.
+> **한국 주식 시세:** 정확·근실시간 시세는 **네이버 금융**(KRX 데이터)을 1차 소스로 사용합니다
+> (실시간 폴링 API → 모바일 기본정보 API 폴백). 네이버가 실패하면 **Stooq(지연)** 로 폴백하며,
+> 둘 다 실패하면 가짜 값 대신 "데이터 없음/접속 차단"으로 표시합니다.
+> KRX 공식 시장데이터(MDC)는 OTP 발급 후 폼 POST 가 필요해 서버 환경에서 불안정하여
+> 1차 소스로 채택하지 않았습니다(원하면 연동 추가 가능).
 
 ---
 
@@ -55,7 +58,30 @@ allowlist로 제한되어 `stooq.com`, `data.sec.gov`, `finnhub.io` 등이 **차
 
 ## 배포
 
-### Render (권장, 무료 플랜)
+### Vercel (권장)
+이 프로젝트는 Vercel 서버리스에 맞게 구성돼 있습니다.
+- 정적 프런트엔드(`public/`)는 Vercel CDN 이 서빙
+- `api/[...path].js` 가 Express 앱을 서버리스 함수로 실행 (`/api/*`)
+
+**대시보드로 배포**
+1. https://vercel.com/new 에서 이 GitHub 저장소를 import
+2. **Root Directory** 를 `terminal` 로 지정 (중요 — 앱이 하위 폴더에 있음)
+3. Framework Preset: **Other** (빌드 명령 불필요, `npm install` 자동)
+4. **Environment Variables** 에 필요한 키 입력 (`FRED_API_KEY`, `FINNHUB_API_KEY`, `DART_API_KEY`, `CONTACT_USER_AGENT` 등). 키 없이도 시세·공시·한국주식은 동작합니다.
+5. Deploy → `https://<프로젝트>.vercel.app` 발급
+
+**CLI 로 배포**
+```bash
+cd terminal
+npm i -g vercel
+vercel            # 최초 1회 프로젝트 연결 (Root Directory = ./ 로 두고 terminal 안에서 실행)
+vercel --prod     # 운영 배포
+```
+
+> 참고: Vercel 같은 일반 호스팅에는 네트워크 allowlist 제한이 없어 모든 외부 데이터 소스가
+> 정상 동작합니다.
+
+### Render (대안, 무료 플랜)
 저장소를 Render에 연결하면 `render.yaml` Blueprint로 자동 배포됩니다. 대시보드에서 위 환경변수를 입력하세요.
 
 ### Docker (어디서나)
@@ -87,7 +113,7 @@ Node 18+ 환경에서 `npm install && node src/server.js` 만으로 실행됩니
 | GET | `/api/news?ticker=AAPL` | 종목 뉴스 (Finnhub 키) |
 | GET | `/api/earnings?ticker=AAPL` | 실적 캘린더 (Finnhub 키) |
 | GET | `/api/options?ticker=AAPL` | 옵션 체인 (Polygon 키) |
-| GET | `/api/korea/quote?code=005930` | 한국 주식 시세 |
+| GET | `/api/korea/quote?code=005930` | 한국 주식 시세 (네이버 1차, Stooq 폴백) |
 | GET | `/api/korea/dart?corp_code=...` | DART 공시 (DART 키) |
 | GET | `/api/sources` | 소스/키 설정 상태 |
 | GET | `/api/health` | 헬스체크 |

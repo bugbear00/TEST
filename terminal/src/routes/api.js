@@ -1,6 +1,7 @@
 // /api 라우터. 각 엔드포인트는 표준 응답 봉투를 반환한다.
 import { Router } from "express";
 import * as stooq from "../providers/stooq.js";
+import * as naver from "../providers/naver.js";
 import * as sec from "../providers/sec.js";
 import * as fred from "../providers/fred.js";
 import * as finnhub from "../providers/finnhub.js";
@@ -84,16 +85,24 @@ api.get("/options", async (req, res) => {
 // --- 한국 주식 / DART ---
 
 // /api/korea/quote?code=005930
+// 1차: 네이버 금융(KRX 근실시간, 정확). 2차: Stooq(지연) 폴백.
 api.get("/korea/quote", async (req, res) => {
   const code = String(req.query.code || "").trim();
-  const sym = code ? `${code}.kr` : "";
-  const r = await stooq.quotes([sym]);
-  if (r.status === "no_data" || (r.data && !r.data.some?.((d) => d.available))) {
-    r.note =
-      (r.note ? r.note + " " : "") +
-      "Stooq 는 한국 종목(KRX) 커버리지가 제한적입니다. 정확한 한국 시세는 KRX/네이버 등 별도 소스 연동이 필요합니다.";
+  const primary = await naver.quote(code);
+  if (primary.status === "ok" || primary.status === "delayed") {
+    return res.json(primary);
   }
-  res.json(r);
+  // 네이버 실패/차단 시 Stooq 로 폴백 시도
+  const fallback = await stooq.quotes([`${code}.kr`]);
+  const fbHasData = fallback.data?.some?.((d) => d.available);
+  if (fbHasData) {
+    fallback.note =
+      (fallback.note ? fallback.note + " " : "") +
+      "네이버 응답 실패로 Stooq(지연) 데이터로 대체했습니다.";
+    return res.json(fallback);
+  }
+  // 둘 다 실패 → 더 의미있는 1차 응답(차단/사유)을 반환
+  res.json(primary);
 });
 
 api.get("/korea/dart", async (req, res) => {
@@ -114,6 +123,7 @@ api.get("/sources", (_req, res) => {
         noKeyRequired: [
           { name: "Stooq", use: "미국/글로벌 시세·지수·원자재·환율(지연)", status: "사용 가능" },
           { name: "SEC EDGAR", use: "미국 공시(10-K/10-Q/8-K)", status: "사용 가능 (User-Agent 권장)" },
+          { name: "네이버 금융", use: "한국 주식(KOSPI/KOSDAQ) 근실시간 시세", status: "사용 가능" },
         ],
         keyRequired: [
           { name: "FRED", env: "FRED_API_KEY", use: "미국 금리/국채 수익률", configured: !!KEYS.FRED },

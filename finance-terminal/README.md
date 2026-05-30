@@ -16,18 +16,42 @@
 
 비로그인(키 없음) 상태에서도 **Yahoo Finance·SEC EDGAR 기반 실데이터**로 시장 개요·시세·차트·뉴스·미국 공시를 볼 수 있습니다. (로그인/회원 기능은 별도이며, 기본 시장 정보는 누구나 실데이터로 열람 가능합니다.)
 
-## 빠른 시작
+## 빠른 시작 (로컬)
 
 ```bash
 cd finance-terminal
 npm install
 cp .env.example .env   # (선택) 키 설정
 npm start              # tsx 로 실행
-#  또는 빌드 후 실행
-npm run build && npm run serve
 ```
 
 브라우저에서 http://localhost:3100 접속.
+
+## Vercel 배포 (실데이터 확인용)
+
+이 프로젝트는 Vercel 서버리스 구조로 작성되어 있습니다 (`api/[...slug].ts`가 모든 `/api/*` 요청을 처리).
+Vercel 런타임은 외부 네트워크 제한이 없어 실제 시세·뉴스·SEC 데이터를 가져올 수 있습니다.
+
+### 방법 1 — Vercel 대시보드 (한 번 설정)
+
+1. https://vercel.com/new 에서 GitHub 저장소 `bugbear00/test` 임포트.
+2. **Root Directory** 를 `finance-terminal` 으로 설정 (중요 — 저장소가 모노리포 구조).
+3. Framework Preset: **Other** (자동 감지됨).
+4. (선택) Environment Variables에 `SEC_USER_AGENT`, `FRED_API_KEY`, `DART_API_KEY`, `FINNHUB_API_KEY` 입력.
+5. Deploy.
+
+### 방법 2 — CLI
+
+```bash
+cd finance-terminal
+npx vercel login          # 최초 1회
+npx vercel --prod         # 배포
+```
+
+### 환경변수
+
+배포 후 Vercel 프로젝트 → Settings → Environment Variables 에서 `.env.example` 의 키들을 등록하면 해당 기능이 활성화됩니다.
+키가 없어도 시장 시세·차트·뉴스·SEC 공시는 정상 동작합니다.
 
 ## 데이터 소스 / 필요한 API 키
 

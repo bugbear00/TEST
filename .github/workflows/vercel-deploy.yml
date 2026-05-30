@@ -1,0 +1,81 @@
+name: Vercel 자동 배포 (finance-terminal)
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/korean-us-stock-terminal-**'
+    paths:
+      - 'finance-terminal/**'
+      - '.github/workflows/vercel-deploy.yml'
+  workflow_dispatch: {}
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: finance-terminal
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Verify secrets present
+        env:
+          TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::필수 시크릿이 없습니다. 저장소 Settings → Secrets and variables → Actions 에 다음 3개를 등록하세요:"
+            echo "  - VERCEL_TOKEN     (https://vercel.com/account/tokens)"
+            echo "  - VERCEL_ORG_ID    (Vercel 프로젝트 → Settings → General → Team/Project IDs)"
+            echo "  - VERCEL_PROJECT_ID"
+            exit 1
+          fi
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "stage=production" >> $GITHUB_OUTPUT
+            echo "vflag=--prod" >> $GITHUB_OUTPUT
+          else
+            echo "stage=preview" >> $GITHUB_OUTPUT
+            echo "vflag=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Pull Vercel project config
+        run: vercel pull --yes --environment=${{ steps.env.outputs.stage }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build ${{ steps.env.outputs.vflag }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy (prebuilt)
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt ${{ steps.env.outputs.vflag }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+          echo "### Deployed: $URL" >> $GITHUB_STEP_SUMMARY
+          echo "Stage: ${{ steps.env.outputs.stage }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Smoke test deployed app
+        run: |
+          URL="${{ steps.deploy.outputs.url }}"
+          echo "Hitting $URL/api/health"
+          curl -sf "$URL/api/health" | tee /dev/stderr
+          echo
+          echo "Hitting $URL/api/markets (first group status)"
+          curl -sf "$URL/api/markets" | head -c 400

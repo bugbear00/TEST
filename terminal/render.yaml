@@ -1,0 +1,22 @@
+# Render.com 배포 설정 (Blueprint). 저장소를 연결하면 자동 배포됩니다.
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: us-finance-terminal-ko
+    runtime: node
+    rootDir: terminal
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: CONTACT_USER_AGENT
+        sync: false
+      - key: FRED_API_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: DART_API_KEY
+        sync: false
+      - key: POLYGON_API_KEY
+        sync: false

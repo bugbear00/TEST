@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>US 터미널 · 미국주식 한국어 금융 터미널</title>
+  <meta name="description" content="미국주식 투자자를 위한 한국어 금융 터미널. 미국 주식·ETF·지수·원자재·환율·금리, SEC 공시, 한국 주식·DART 공시 지원." />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">▮▮</span>
+      <span>US 터미널</span>
+      <span class="tag">미국주식 한국어 금융 터미널</span>
+    </div>
+    <div class="search">
+      <input id="symbolInput" type="text" placeholder="티커 입력 (예: AAPL, MSFT, SPY)" autocomplete="off" />
+      <button id="searchBtn">조회</button>
+    </div>
+    <div class="legend" id="legend"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="market">시장 개요</button>
+    <button class="tab" data-view="stock">종목</button>
+    <button class="tab" data-view="filings">SEC 공시</button>
+    <button class="tab" data-view="korea">한국 / DART</button>
+    <button class="tab" data-view="sources">API / 소스</button>
+  </nav>
+
+  <main id="app">
+    <!-- 시장 개요 -->
+    <section class="view active" data-view="market">
+      <div class="grid">
+        <div class="panel" id="panel-indices"><h2>주요 지수</h2><div class="panel-body">불러오는 중…</div></div>
+        <div class="panel" id="panel-forex"><h2>환율 / 달러</h2><div class="panel-body">불러오는 중…</div></div>
+        <div class="panel" id="panel-commodities"><h2>원자재</h2><div class="panel-body">불러오는 중…</div></div>
+        <div class="panel" id="panel-rates"><h2>미국 금리 (국채 수익률)</h2><div class="panel-body">불러오는 중…</div></div>
+      </div>
+    </section>
+
+    <!-- 종목 -->
+    <section class="view" data-view="stock">
+      <div class="panel">
+        <h2>종목 시세 <span class="hint">상단 검색창에 티커를 입력하세요</span></h2>
+        <div class="panel-body" id="panel-quote">티커를 입력하면 시세가 표시됩니다.</div>
+      </div>
+      <div class="grid two">
+        <div class="panel"><h2>실적 캘린더</h2><div class="panel-body" id="panel-earnings">티커를 조회하세요.</div></div>
+        <div class="panel"><h2>뉴스</h2><div class="panel-body" id="panel-news">티커를 조회하세요.</div></div>
+      </div>
+      <div class="panel"><h2>옵션 체인</h2><div class="panel-body" id="panel-options">티커를 조회하세요.</div></div>
+    </section>
+
+    <!-- SEC 공시 -->
+    <section class="view" data-view="filings">
+      <div class="panel">
+        <h2>SEC EDGAR 공시</h2>
+        <div class="panel-body" id="panel-filings">상단 검색창에 미국 티커를 입력하면 최근 공시가 표시됩니다.</div>
+      </div>
+    </section>
+
+    <!-- 한국 / DART -->
+    <section class="view" data-view="korea">
+      <div class="panel">
+        <h2>한국 주식 시세</h2>
+        <div class="kr-controls">
+          <input id="krCode" type="text" placeholder="종목코드 6자리 (예: 005930)" />
+          <button id="krQuoteBtn">시세 조회</button>
+        </div>
+        <div class="panel-body" id="panel-krquote">종목코드를 입력하세요.</div>
+      </div>
+      <div class="panel">
+        <h2>DART 전자공시</h2>
+        <div class="kr-controls">
+          <input id="dartCorp" type="text" placeholder="회사 고유번호 corp_code (8자리)" />
+          <button id="dartBtn">공시 조회</button>
+        </div>
+        <div class="panel-body" id="panel-dart">corp_code 를 입력하세요. (DART API 키 필요)</div>
+      </div>
+    </section>
+
+    <!-- API / 소스 -->
+    <section class="view" data-view="sources">
+      <div class="panel">
+        <h2>데이터 소스 및 API 키 상태</h2>
+        <div class="panel-body" id="panel-sources">불러오는 중…</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>데이터는 정보 제공 목적이며 투자 권유가 아닙니다. 무료 소스는 지연될 수 있습니다.</span>
+    <span id="clock"></span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
